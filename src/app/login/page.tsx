@@ -52,15 +52,21 @@ export default function LoginPage() {
     }
   };
 
-  // Don't render the form if we are still checking the user's auth state
-  // or if the user is already logged in (to prevent flashing the form).
-  if (isUserLoading || user) {
+  // Only show loader while the auth state is initially being determined.
+  if (isUserLoading) {
     return (
        <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
+  
+  // If user is already logged in, the useEffect will handle the redirect.
+  // Render nothing here to prevent the form from flashing.
+  if (user) {
+    return null;
+  }
+
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
