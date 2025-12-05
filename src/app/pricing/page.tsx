@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowLeft, CheckCircle, Lock, Loader2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,13 +16,13 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { generateNumbersAction } from "@/app/actions";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { BlockedNumbersCard } from "@/components/blocked-numbers-card";
 
 // Este código de acesso é apenas para fins de demonstração.
 // Em um aplicativo real, a validação seria feita no backend após um pagamento bem-sucedido.
@@ -36,8 +35,6 @@ export default function PricingPage() {
   const [accessCode, setAccessCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  const lotteryTicketImage = PlaceHolderImages.find(p => p.id === 'lottery-ticket');
-
   const handleLiberarAcesso = async () => {
     if (accessCode.trim().toUpperCase() !== ACCESS_CODE) {
       toast({
@@ -82,17 +79,8 @@ export default function PricingPage() {
           </p>
           <p className="text-lg text-gray-300">Apenas uma única liberação por jogo.</p>
           
-          <div className="relative my-8 w-full">
-            {lotteryTicketImage && (
-               <Image
-                src={lotteryTicketImage.imageUrl}
-                alt={lotteryTicketImage.description}
-                width={600}
-                height={350}
-                data-ai-hint={lotteryTicketImage.imageHint}
-                className="rounded-xl shadow-2xl"
-              />
-            )}
+          <div className="relative my-8 w-full max-w-sm transform -rotate-3">
+             <BlockedNumbersCard />
           </div>
           
           <div className="flex flex-col items-center space-y-2 mb-8">
