@@ -51,7 +51,7 @@ interface AccessCodeDoc {
 
 // Combined interface for display
 interface CustomerView extends WithId<CustomerDoc> {
-  accessCode?: string;
+  accessCode?: string | 'loading' | 'error';
   isUsed?: boolean;
 }
 
@@ -66,7 +66,6 @@ export default function AdminPage() {
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
   const [customersView, setCustomersView] = useState<CustomerView[]>([]);
-  const [isViewLoading, setIsViewLoading] = useState(true);
 
   // Simple, robust authentication check.
   useEffect(() => {
@@ -85,50 +84,63 @@ export default function AdminPage() {
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<CustomerDoc>(customersQuery);
 
   useEffect(() => {
-    const processCustomers = async () => {
-      setIsViewLoading(true);
-      if (!customers || !firestore) {
-        if (!isLoadingCustomers) {
-           setIsViewLoading(false);
-        }
+    if (!customers) {
+      setCustomersView([]);
+      return;
+    }
+    
+    // Initialize view with loading state for access codes
+    const initialView = customers.map(customer => ({
+      ...customer,
+      accessCode: 'loading',
+      isUsed: undefined,
+    }));
+    setCustomersView(initialView);
+
+    // Fetch access codes for each customer individually
+    customers.forEach((customer, index) => {
+      if (!firestore || !customer.accessCodeId) {
+        setCustomersView(prev => {
+            const newState = [...prev];
+            newState[index].accessCode = 'error';
+            return newState;
+        });
         return;
       }
-
-      const viewData = await Promise.all(
-        customers.map(async (customer) => {
-          let codeData: Partial<AccessCodeDoc> & { id: string } = { id: customer.accessCodeId };
-          try {
-            if (customer.accessCodeId) {
-              const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
-              const codeSnap = await getDoc(codeRef);
-              if (codeSnap.exists()) {
-                codeData = { ...codeSnap.data() as AccessCodeDoc, id: codeSnap.id };
-              }
-            }
-          } catch (error) {
-            console.error(`Failed to fetch access code for customer ${customer.id}`, error);
-            return { 
-                ...customer, 
-                accessCode: 'Erro ao carregar',
-                isUsed: undefined
-             };
-          }
-
-          return {
-            ...customer,
-            accessCode: codeData?.code,
-            isUsed: codeData?.isUsed,
-          };
-        })
-      );
       
-      setCustomersView(viewData);
-      setIsViewLoading(false);
-    };
+      const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
+      getDoc(codeRef).then(codeSnap => {
+        let codeData: Partial<AccessCodeDoc> = {};
+        if (codeSnap.exists()) {
+          codeData = codeSnap.data() as AccessCodeDoc;
+        } else {
+           console.error(`Access code doc not found for id: ${customer.accessCodeId}`);
+        }
+        
+        setCustomersView(prev => {
+            const newState = [...prev];
+            // Find the correct customer to update, in case the order has changed
+            const customerIndex = newState.findIndex(c => c.id === customer.id);
+            if (customerIndex !== -1) {
+                newState[customerIndex].accessCode = codeData.code || 'error';
+                newState[customerIndex].isUsed = codeData.isUsed;
+            }
+            return newState;
+        });
+      }).catch(error => {
+        console.error(`Failed to fetch access code for customer ${customer.id}`, error);
+        setCustomersView(prev => {
+            const newState = [...prev];
+            const customerIndex = newState.findIndex(c => c.id === customer.id);
+            if (customerIndex !== -1) {
+                newState[customerIndex].accessCode = 'error';
+            }
+            return newState;
+        });
+      });
+    });
 
-    processCustomers();
-    
-  }, [customers, firestore, isLoadingCustomers]);
+  }, [customers, firestore]);
 
 
   const handleLogout = () => {
@@ -262,7 +274,7 @@ export default function AdminPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isViewLoading ? (
+                  {isLoadingCustomers ? (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center">
                         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
@@ -274,8 +286,14 @@ export default function AdminPage() {
                         <TableCell>{customer.email}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span>{customer.accessCode || 'Processando...'}</span>
-                            {customer.accessCode && customer.accessCode !== 'Processando...' && customer.accessCode !== 'Erro ao carregar' && (
+                             {customer.accessCode === 'loading' ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                             ) : customer.accessCode === 'error' ? (
+                                <span className="text-destructive">Erro</span>
+                             ) : (
+                                <span>{customer.accessCode}</span>
+                             )}
+                            {customer.accessCode && customer.accessCode !== 'loading' && customer.accessCode !== 'error' && (
                                <Button
                                 variant="ghost"
                                 size="icon"
@@ -295,7 +313,9 @@ export default function AdminPage() {
                                 <Badge className="bg-green-600 text-white">Disponível</Badge>
                               )
                           ) : (
-                            <Badge variant="secondary">{customer.accessCode === 'Erro ao carregar' ? 'Erro' : 'Processando...'}</Badge>
+                            <Badge variant="secondary">
+                                {customer.accessCode === 'error' ? 'Erro' : <Loader2 className="h-3 w-3 animate-spin" />}
+                            </Badge>
                           )}
                         </TableCell>
                         <TableCell>
@@ -319,3 +339,5 @@ export default function AdminPage() {
     </main>
   );
 }
+
+    
