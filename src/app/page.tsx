@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { Clover } from 'lucide-react';
 import Link from 'next/link';
 import { BackgroundDecorations } from '@/components/background-decorations';
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -9,7 +9,13 @@ export default function Home() {
       <BackgroundDecorations />
       <div className="flex min-h-[90vh] flex-col items-center justify-center p-4 text-center">
         <main>
-          <Clover className="mx-auto h-24 w-24 text-primary" />
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={100}
+            height={100}
+            className="mx-auto"
+          />
           <h1 className="mt-4 text-5xl font-bold uppercase tracking-wider text-primary md:text-7xl">
             Mega da Virada
           </h1>
