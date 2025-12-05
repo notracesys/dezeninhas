@@ -19,7 +19,7 @@ export default function Home() {
           <h1 className="font-headline mt-4 text-5xl font-extrabold uppercase tracking-wider text-primary md:text-7xl">
             Mega da Virada
           </h1>
-          <h2 className="mt-2 text-2xl font-semibold text-primary/80 md:text-3xl">
+          <h2 className="mt-2 text-xl font-semibold text-primary/80 md:text-2xl">
             Aumente Suas Chances
           </h2>
           <p className="mt-6 max-w-lg text-lg text-slate-600">
