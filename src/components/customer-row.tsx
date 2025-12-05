@@ -72,21 +72,6 @@ export function CustomerRow({ customer }: CustomerRowProps) {
     }
   };
 
-  const getCreationDate = () => {
-    // The `createdAt` field from `customer` might be a Firestore Timestamp object
-    // or a plain object during the brief moment of local creation before server sync.
-    // This safely handles both cases.
-    if (!customer.createdAt) {
-      return 'Processando...';
-    }
-    // Firestore Timestamps have a `toDate` method.
-    if (typeof customer.createdAt.toDate === 'function') {
-      return customer.createdAt.toDate().toLocaleDateString('pt-BR');
-    }
-    // If it's not a Timestamp object yet, it's still syncing.
-    return 'Processando...';
-  };
-
   return (
     <TableRow>
       <TableCell>{customer.email}</TableCell>
@@ -124,7 +109,6 @@ export function CustomerRow({ customer }: CustomerRowProps) {
            <Badge variant="secondary">Erro</Badge>
         )}
       </TableCell>
-      <TableCell>{getCreationDate()}</TableCell>
     </TableRow>
   );
 }
