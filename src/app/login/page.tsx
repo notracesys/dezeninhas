@@ -40,7 +40,8 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // The useEffect will handle the redirection
+      // Explicitly redirect on success
+      router.push('/admin');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -52,6 +53,7 @@ export default function LoginPage() {
   };
 
   // Don't render the form if we are still checking the user's auth state
+  // or if the user is already logged in (to prevent flashing the form).
   if (isUserLoading || user) {
     return (
        <div className="flex min-h-screen items-center justify-center bg-gray-100">

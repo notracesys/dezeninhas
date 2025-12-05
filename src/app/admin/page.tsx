@@ -286,7 +286,7 @@ export default function AdminPage() {
                       </TableCell>
                     </TableRow>
                   )}
-                </TableBody>
+                </Body>
               </Table>
             </div>
           </CardContent>
