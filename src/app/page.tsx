@@ -6,7 +6,7 @@ import Image from 'next/image';
 export default function Home() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-background">
-      <div className="absolute inset-0 z-0 h-full w-full bg-white"></div>
+      <div className="absolute inset-0 z-0 h-full w-full"></div>
       <BackgroundDecorations />
       <div className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center p-4 text-center">
         <main>
@@ -17,10 +17,10 @@ export default function Home() {
             height={100}
             className="mx-auto"
           />
-          <h1 className="font-headline animate-sheen mt-4 text-5xl font-extrabold uppercase tracking-wider text-primary md:text-7xl">
+          <h1 className="font-headline animate-sheen mt-4 text-5xl font-extrabold uppercase tracking-wider text-accent md:text-7xl">
             Números da Virada
           </h1>
-          <h2 className="mt-2 text-xl font-semibold text-primary/80 md:text-2xl">
+          <h2 className="mt-2 text-xl font-semibold text-accent/80 md:text-2xl">
             Aumente Suas Chances
           </h2>
           <p className="mt-6 max-w-lg text-lg text-slate-600">
