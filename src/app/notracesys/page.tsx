@@ -2,9 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { useUser, useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -20,82 +17,79 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('notracesysadm@gmail.com');
+// The secret code for admin access.
+const SECRET_CODE = process.env.NEXT_PUBLIC_ADMIN_SECRET_CODE || 'notracesys123';
+const AUTH_KEY = 'notracesys_auth_token';
+
+export default function SecretCodeLoginPage() {
+  const [code, setCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
-  const { user, isUserLoading } = useUser();
-  const auth = useAuth();
   const { toast } = useToast();
 
-  // Effect to handle automatic redirect
   useEffect(() => {
-    // If the initial auth check is done and a user exists, redirect them.
-    if (!isUserLoading && user) {
-      router.push('/admin');
+    // Check if the user is already authenticated on the client side.
+    if (sessionStorage.getItem(AUTH_KEY) === 'true') {
+      router.replace('/admin');
+    } else {
+      setIsLoading(false);
     }
-  }, [user, isUserLoading, router]);
+  }, [router]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    if (!auth) {
-        toast({
-            variant: 'destructive',
-            title: 'Erro de Configuração',
-            description: 'O serviço de autenticação não está disponível.',
-        });
-        setIsSubmitting(false);
-        return;
-    }
-    try {
-      // Hard-coded email and password for guaranteed login
-      await signInWithEmailAndPassword(auth, "notracesysadm@gmail.com", "123456");
-      // On successful login, the useEffect above will handle the redirect.
-    } catch (error: any) {
+
+    if (code === SECRET_CODE) {
+      // On successful validation, set a session token and redirect.
+      sessionStorage.setItem(AUTH_KEY, 'true');
+      toast({
+        title: 'Acesso Autorizado!',
+        description: 'Redirecionando para o painel de administração...',
+      });
+      router.push('/admin');
+    } else {
       toast({
         variant: 'destructive',
-        title: 'Falha no Login',
-        description: 'Email incorreto ou erro no sistema. Por favor, tente novamente.',
+        title: 'Código Incorreto',
+        description: 'O código secreto inserido está incorreto. Tente novamente.',
       });
       setIsSubmitting(false);
     }
   };
 
-  // While checking auth state or if user exists (and is about to be redirected), show a loader.
-  if (isUserLoading || user) {
+  if (isLoading) {
     return (
-       <div className="flex min-h-screen items-center justify-center bg-gray-100">
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="ml-4">Carregando...</p>
+        <p className="ml-4">Verificando sessão...</p>
       </div>
     );
   }
 
-  // If not loading and not logged in, show the login form.
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
       <Card className="w-full max-w-sm">
         <form onSubmit={handleLogin}>
           <CardHeader className="text-center">
-             <Image src="/logo.png" alt="Logo" width={60} height={60} className="mx-auto mb-2" />
+            <Image src="/logo.png" alt="Logo" width={60} height={60} className="mx-auto mb-2" />
             <CardTitle>Painel de Administração</CardTitle>
-            <CardDescription>Faça login para continuar</CardDescription>
+            <CardDescription>Insira o código secreto para continuar</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="secret-code">Código Secreto</Label>
               <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
+                id="secret-code"
+                type="password"
+                placeholder="Seu código secreto"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
                 disabled={isSubmitting}
               />
             </div>
-            {/* O campo de senha foi removido da interface para simplificar o login */}
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isSubmitting}>

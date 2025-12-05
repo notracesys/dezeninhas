@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase/provider';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import {
   collection,
@@ -13,7 +12,6 @@ import {
   doc,
   writeBatch,
 } from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -45,28 +43,31 @@ interface Customer {
   isUsed?: boolean;
 }
 
+const AUTH_KEY = 'notracesys_auth_token';
+
 export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, isUserLoading, auth } = useUser();
   const firestore = useFirestore();
 
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
-  // Redirect if not logged in
+  // Simple, robust authentication check.
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/notracesys');
+    if (sessionStorage.getItem(AUTH_KEY) !== 'true') {
+      router.replace('/notracesys');
+    } else {
+      setIsAuthenticated(true);
     }
-  }, [user, isUserLoading, router]);
+  }, [router]);
 
   const customersQuery = useMemoFirebase(() => {
-    // Only create the query if the user is logged in and firestore is available.
-    if (!firestore || !user) return null;
+    if (!firestore || !isAuthenticated) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, user]);
+  }, [firestore, isAuthenticated]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
 
@@ -100,16 +101,14 @@ export default function AdminPage() {
       }
     };
     
-    if (user && customers) {
+    if (isAuthenticated && customers) {
         fetchAccessCodes();
     }
-  }, [customers, firestore, user]);
+  }, [customers, firestore, isAuthenticated]);
 
-  const handleLogout = async () => {
-    if (auth) {
-      await signOut(auth);
-      router.push('/notracesys');
-    }
+  const handleLogout = () => {
+    sessionStorage.removeItem(AUTH_KEY);
+    router.push('/notracesys');
   };
 
   const generateAccessCode = () => {
@@ -172,7 +171,7 @@ export default function AdminPage() {
   };
 
   // Display a loading spinner while checking auth status
-  if (isUserLoading) {
+  if (isAuthenticated === null) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -180,11 +179,11 @@ export default function AdminPage() {
     );
   }
 
-  // If there's no user, the effect will redirect. A fallback UI.
-  if (!user) {
-    return (
+  // If not authenticated, the effect will redirect. This is a fallback UI.
+  if (!isAuthenticated) {
+     return (
        <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <p>Redirecionando para a página de login...</p>
+        <p>Redirecionando...</p>
       </div>
     );
   }
