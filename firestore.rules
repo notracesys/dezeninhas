@@ -10,12 +10,6 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && get(/databases/$(database)/documents/roles_admin/$(request.auth.uid)).data.isAdmin == true;
     }
-    
-    // Anyone can read an access code to validate it, but not list all codes.
-    // This allows the client-side to check if a code is valid and not used.
-    function canValidateAccessCode(code) {
-        return exists(/databases/$(database)/documents/access_codes/$(code));
-    }
 
     match /customers/{customerId} {
       // Only admins can read, list, create, or delete customer records.
@@ -35,7 +29,7 @@ service cloud.firestore {
       // 3. No other fields can be changed.
       allow update: if request.resource.data.isUsed == true &&
                        resource.data.isUsed == false &&
-                       request.resource.data.keys().hasOnly(['isUsed', 'usedAt', 'code', 'createdAt']);
+                       request.resource.data.keys().hasOnly(['isUsed', 'usedAt']);
     }
     
     match /roles_admin/{userId} {

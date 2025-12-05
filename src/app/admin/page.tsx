@@ -88,12 +88,20 @@ export default function AdminPage() {
                     accessCode: 'N/A',
                 };
             }
-            const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
-            const codeSnap = await getDoc(codeRef);
-            return {
-              ...customer,
-              accessCode: codeSnap.exists() ? codeSnap.data().code : 'N/A',
-            };
+            try {
+              const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
+              const codeSnap = await getDoc(codeRef);
+              return {
+                ...customer,
+                accessCode: codeSnap.exists() ? codeSnap.data().code : 'N/A',
+              };
+            } catch (error) {
+               console.error(`Failed to fetch access code for customer ${customer.id}`, error);
+               return {
+                    ...customer,
+                    accessCode: 'Erro',
+               };
+            }
           })
         );
         setCustomersWithCodes(customersData);
