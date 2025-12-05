@@ -53,7 +53,7 @@ export default function AdminPage() {
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
-  // Effect to handle redirection based on auth status
+  // Redirect if not logged in
   useEffect(() => {
     if (!isUserLoading && !user) {
       router.push('/login');
@@ -62,7 +62,7 @@ export default function AdminPage() {
 
   const customersQuery = useMemoFirebase(() => {
     // Only create the query if the user is logged in and firestore is available.
-    if (!firestore || !user) return null; 
+    if (!firestore || !user) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
   }, [firestore, user]);
 
@@ -173,7 +173,7 @@ export default function AdminPage() {
     );
   }
 
-  // If there's no user, the effect will redirect.
+  // If there's no user, the effect will redirect. A fallback UI.
   if (!user) {
     return (
        <div className="flex min-h-screen items-center justify-center bg-gray-100">
