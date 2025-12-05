@@ -2,26 +2,10 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Allow any authenticated user to read, list, and write customers.
-    match /customers/{document=**} {
-      allow read, write: if request.auth != null;
-    }
-    
-    // Allow any authenticated user to read, list, and write access codes.
-    match /access_codes/{document=**} {
-       allow read, write: if request.auth != null;
-    }
-    
-    // Allow anyone to read a specific access code if it's not used
-    // This is for the validation on the pricing page.
-    match /access_codes/{accessCodeId} {
-      allow get: if resource.data.isUsed == false;
-    }
-    
-    // Allow any authenticated user to manage admin roles.
-    match /roles_admin/{document=**} {
-      allow read, write: if request.auth != null;
+    // This rule allows anyone to read and write to any collection.
+    // This is insecure and should only be used for initial development.
+    match /{document=**} {
+      allow read, write: if true;
     }
   }
 }
