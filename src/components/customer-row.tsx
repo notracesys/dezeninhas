@@ -15,7 +15,7 @@ import { WithId } from '@/firebase/firestore/use-collection';
 export interface CustomerDoc {
   email: string;
   accessCodeId: string;
-  createdAt: Timestamp;
+  createdAt: Timestamp; // This should be a Firestore Timestamp object
 }
 
 interface AccessCodeDoc {
@@ -29,6 +29,18 @@ interface CustomerRowProps {
   customer: WithId<CustomerDoc>;
 }
 
+// Function to safely convert Firestore Timestamps
+function formatTimestamp(timestamp: any): string {
+  if (timestamp && typeof timestamp.toDate === 'function') {
+    return timestamp.toDate().toLocaleDateString('pt-BR');
+  }
+  // Handle cases where it might be a plain object before server sync
+  if (timestamp && timestamp.seconds) {
+    return new Date(timestamp.seconds * 1000).toLocaleDateString('pt-BR');
+  }
+  return 'Processando...';
+}
+
 export function CustomerRow({ customer }: CustomerRowProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -38,6 +50,7 @@ export function CustomerRow({ customer }: CustomerRowProps) {
 
   useEffect(() => {
     const fetchAccessCode = async () => {
+      setIsLoadingCode(true); // Reset loading state on each run
       if (!firestore || !customer.accessCodeId) {
         setIsLoadingCode(false);
         return;
@@ -50,24 +63,30 @@ export function CustomerRow({ customer }: CustomerRowProps) {
           setAccessCode(codeData.code);
           setIsUsed(codeData.isUsed);
         } else {
+          setAccessCode('Não encontrado');
+          setIsUsed(null);
           console.error(`Access code not found for ID: ${customer.accessCodeId}`);
         }
       } catch (error) {
         console.error("Error fetching access code:", error);
+        setAccessCode('Erro');
+        setIsUsed(null);
       } finally {
         setIsLoadingCode(false);
       }
     };
 
     fetchAccessCode();
-  }, [firestore, customer.accessCodeId]);
+  }, [firestore, customer.id, customer.accessCodeId]); // Depend on customer.id to refetch if the customer object changes
 
   const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copiado!',
-      description: 'Código de acesso copiado para a área de transferência.',
-    });
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      toast({
+        title: 'Copiado!',
+        description: 'Código de acesso copiado para a área de transferência.',
+      });
+    }
   };
 
   return (
@@ -77,7 +96,7 @@ export function CustomerRow({ customer }: CustomerRowProps) {
         <div className="flex items-center gap-2">
           {isLoadingCode ? (
             <Loader2 className="h-4 w-4 animate-spin" />
-          ) : accessCode ? (
+          ) : accessCode && accessCode !== 'Erro' && accessCode !== 'Não encontrado' ? (
             <>
               <span>{accessCode}</span>
               <Button
@@ -90,7 +109,7 @@ export function CustomerRow({ customer }: CustomerRowProps) {
               </Button>
             </>
           ) : (
-            <span className="text-destructive">Erro</span>
+            <span className="text-destructive">{accessCode || 'Erro'}</span>
           )}
         </div>
       </TableCell>
@@ -108,7 +127,7 @@ export function CustomerRow({ customer }: CustomerRowProps) {
         )}
       </TableCell>
       <TableCell>
-        {customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString('pt-BR') : 'Processando...'}
+        {formatTimestamp(customer.createdAt)}
       </TableCell>
     </TableRow>
   );
