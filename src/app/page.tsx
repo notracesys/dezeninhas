@@ -16,7 +16,7 @@ export default function Home() {
             height={100}
             className="mx-auto"
           />
-          <h1 className="mt-4 text-5xl font-extrabold uppercase tracking-wider text-primary md:text-7xl">
+          <h1 className="font-headline mt-4 text-5xl font-extrabold uppercase tracking-wider text-primary md:text-7xl">
             Mega da Virada
           </h1>
           <h2 className="mt-2 text-2xl font-semibold text-primary/80 md:text-3xl">
@@ -28,7 +28,7 @@ export default function Home() {
           </p>
           <Button
             asChild
-            size="lg"
+            size="sm"
             className="mt-8 transform rounded-lg bg-primary px-6 py-3 text-base font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90"
           >
             <Link href="/pricing">QUERO GERAR MEUS NÚMEROS</Link>
