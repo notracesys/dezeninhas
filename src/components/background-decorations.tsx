@@ -44,7 +44,7 @@ export function BackgroundDecorations() {
   }, []);
 
   return (
-    <div className="absolute inset-0 -z-10 h-full w-full overflow-hidden">
+    <div className="absolute inset-0 z-0 h-full w-full overflow-hidden">
       <style>
         {`
           @keyframes float {

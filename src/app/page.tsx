@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-white">
       <BackgroundDecorations />
-      <div className="flex min-h-[90vh] flex-col items-center justify-center p-4 text-center">
+      <div className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center p-4 text-center">
         <main>
           <Image
             src="/logo.png"
@@ -35,7 +35,7 @@ export default function Home() {
           </Button>
         </main>
       </div>
-      <footer className="w-full bg-white p-4 pb-8">
+      <footer className="relative z-10 w-full bg-white p-4 pb-8">
         <div className="mx-auto max-w-3xl text-center text-slate-500">
           <h3 className="font-bold text-xs mb-1">Aviso Importante</h3>
           <p className="text-[10px]">
