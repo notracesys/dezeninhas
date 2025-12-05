@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import {
@@ -12,6 +12,7 @@ import {
   doc,
   writeBatch,
   Timestamp,
+  limit,
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -78,7 +79,11 @@ export default function AdminPage() {
 
   const customersQuery = useMemoFirebase(() => {
     if (!firestore || !isAuthenticated) return null;
-    return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
+    return query(
+      collection(firestore, 'customers'),
+      orderBy('createdAt', 'desc'),
+      limit(50) // Limit to the most recent 50 customers for performance
+    );
   }, [firestore, isAuthenticated]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<CustomerDoc>(customersQuery);
@@ -98,7 +103,7 @@ export default function AdminPage() {
     setCustomersView(initialView);
 
     // Fetch access codes for each customer individually
-    customers.forEach((customer, index) => {
+    customers.forEach((customer) => {
       if (!firestore || !customer.accessCodeId) {
         setCustomersView(prev => {
             const newState = [...prev];
