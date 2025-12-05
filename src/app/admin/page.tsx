@@ -8,10 +8,8 @@ import {
   serverTimestamp,
   query,
   orderBy,
-  getDoc,
   doc,
   writeBatch,
-  Timestamp,
   limit,
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -31,30 +29,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Copy, LogOut } from 'lucide-react';
+import { Loader2, LogOut } from 'lucide-react';
 import { useCollection, WithId } from '@/firebase/firestore/use-collection';
-
-// Raw interfaces from Firestore
-interface CustomerDoc {
-  email: string;
-  accessCodeId: string;
-  createdAt: Timestamp;
-}
-
-interface AccessCodeDoc {
-  code: string;
-  isUsed: boolean;
-  createdAt: Timestamp;
-  usedAt: Timestamp | null;
-}
-
-// Combined interface for display
-interface CustomerView extends WithId<CustomerDoc> {
-  accessCode?: string | 'loading' | 'error';
-  isUsed?: boolean;
-}
+import { CustomerRow, type CustomerDoc } from '@/components/customer-row';
 
 const AUTH_KEY = 'notracesys_auth_token';
 
@@ -66,7 +44,6 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
-  const [customersView, setCustomersView] = useState<CustomerView[]>([]);
 
   // Simple, robust authentication check.
   useEffect(() => {
@@ -87,69 +64,6 @@ export default function AdminPage() {
   }, [firestore, isAuthenticated]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<CustomerDoc>(customersQuery);
-
-  useEffect(() => {
-    if (!customers) {
-      setCustomersView([]);
-      return;
-    }
-    
-    // Initialize view with loading state for access codes
-    const initialView = customers.map(customer => ({
-      ...customer,
-      accessCode: 'loading',
-      isUsed: undefined,
-    }));
-    setCustomersView(initialView);
-
-    // Fetch access codes for each customer individually
-    customers.forEach((customer) => {
-      if (!firestore || !customer.accessCodeId) {
-        setCustomersView(prev => {
-            const newState = [...prev];
-            const customerIndexToUpdate = newState.findIndex(c => c.id === customer.id);
-            if (customerIndexToUpdate !== -1) {
-              newState[customerIndexToUpdate].accessCode = 'error';
-            }
-            return newState;
-        });
-        return;
-      }
-      
-      const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
-      getDoc(codeRef).then(codeSnap => {
-        let codeData: Partial<AccessCodeDoc> = {};
-        if (codeSnap.exists()) {
-          codeData = codeSnap.data() as AccessCodeDoc;
-        } else {
-           console.error(`Access code doc not found for id: ${customer.accessCodeId}`);
-        }
-        
-        setCustomersView(prev => {
-            const newState = [...prev];
-            // Find the correct customer to update, in case the order has changed
-            const customerIndexToUpdate = newState.findIndex(c => c.id === customer.id);
-            if (customerIndexToUpdate !== -1) {
-                newState[customerIndexToUpdate].accessCode = codeData.code || 'error';
-                newState[customerIndexToUpdate].isUsed = codeData.isUsed;
-            }
-            return newState;
-        });
-      }).catch(error => {
-        console.error(`Failed to fetch access code for customer ${customer.id}`, error);
-        setCustomersView(prev => {
-            const newState = [...prev];
-            const customerIndexToUpdate = newState.findIndex(c => c.id === customer.id);
-            if (customerIndexToUpdate !== -1) {
-                newState[customerIndexToUpdate].accessCode = 'error';
-            }
-            return newState;
-        });
-      });
-    });
-
-  }, [customers, firestore]);
-
 
   const handleLogout = () => {
     sessionStorage.removeItem(AUTH_KEY);
@@ -207,14 +121,6 @@ export default function AdminPage() {
     } finally {
       setIsCreatingCustomer(false);
     }
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copiado!',
-      description: 'Código de acesso copiado para a área de transferência.',
-    });
   };
 
   if (isAuthenticated === null) {
@@ -288,48 +194,9 @@ export default function AdminPage() {
                         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                       </TableCell>
                     </TableRow>
-                  ) : customersView.length > 0 ? (
-                    customersView.map((customer) => (
-                      <TableRow key={customer.id}>
-                        <TableCell>{customer.email}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                             {customer.accessCode === 'loading' ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                             ) : customer.accessCode === 'error' ? (
-                                <span className="text-destructive">Erro</span>
-                             ) : (
-                                <span>{customer.accessCode}</span>
-                             )}
-                            {customer.accessCode && customer.accessCode !== 'loading' && customer.accessCode !== 'error' && (
-                               <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7"
-                                onClick={() => copyToClipboard(customer.accessCode!)}
-                               >
-                                <Copy className="h-4 w-4" />
-                               </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {typeof customer.isUsed === 'boolean' ? (
-                              customer.isUsed ? (
-                                <Badge variant="destructive">Utilizado</Badge>
-                              ) : (
-                                <Badge className="bg-green-600 text-white">Disponível</Badge>
-                              )
-                          ) : (
-                            <Badge variant="secondary">
-                                {customer.accessCode === 'error' ? 'Erro' : '...'}
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                           {customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString('pt-BR') : 'Processando...'}
-                        </TableCell>
-                      </TableRow>
+                  ) : customers && customers.length > 0 ? (
+                    customers.map((customer) => (
+                      <CustomerRow key={customer.id} customer={customer} />
                     ))
                   ) : (
                     <TableRow>
