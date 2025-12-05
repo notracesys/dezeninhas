@@ -55,9 +55,10 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(false);
   
   const customersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    // Only create the query if the user is authenticated and firestore is available
+    if (!firestore || !user) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+  }, [firestore, user]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
@@ -73,6 +74,12 @@ export default function AdminPage() {
       if (customers && firestore) {
         const customersData = await Promise.all(
           customers.map(async (customer) => {
+            if (!customer.accessCodeId) {
+                 return {
+                    ...customer,
+                    accessCode: 'N/A',
+                };
+            }
             const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
             const codeSnap = await getDoc(codeRef);
             return {
@@ -104,10 +111,10 @@ export default function AdminPage() {
 
     try {
       const batch = writeBatch(firestore);
+      const newCode = generateAccessCode();
 
       // Create access code
       const accessCodeRef = doc(collection(firestore, 'access_codes'));
-      const newCode = generateAccessCode();
       batch.set(accessCodeRef, {
         code: newCode,
         isUsed: false,
@@ -150,6 +157,7 @@ export default function AdminPage() {
   };
 
   const handleLogout = async () => {
+    if(!auth) return;
     await signOut(auth);
     router.push('/login');
   };
@@ -230,18 +238,20 @@ export default function AdminPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <span>{customer.accessCode}</span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() => customer.accessCode && copyToClipboard(customer.accessCode)}
-                            >
-                              <Copy className="h-4 w-4" />
-                            </Button>
+                            {customer.accessCode && customer.accessCode !== 'N/A' && (
+                               <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7"
+                                onClick={() => copyToClipboard(customer.accessCode!)}
+                               >
+                                <Copy className="h-4 w-4" />
+                               </Button>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          {customer.createdAt?.toDate().toLocaleDateString('pt-BR')}
+                          {customer.createdAt?.toDate ? customer.createdAt?.toDate().toLocaleDateString('pt-BR') : 'Carregando...'}
                         </TableCell>
                       </TableRow>
                     ))
