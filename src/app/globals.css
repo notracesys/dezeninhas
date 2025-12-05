@@ -86,3 +86,36 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .animate-sheen {
+    position: relative;
+    overflow: hidden;
+  }
+  .animate-sheen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-150%) skewX(-30deg);
+    animation: sheen 3s infinite;
+    animation-delay: 1s;
+  }
+}
+
+@keyframes sheen {
+  0% {
+    transform: translateX(-150%) skewX(-30deg);
+  }
+  100% {
+    transform: translateX(350%) skewX(-30deg);
+  }
+}
