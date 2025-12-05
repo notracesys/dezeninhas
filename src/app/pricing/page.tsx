@@ -91,7 +91,7 @@ export default function PricingPage() {
           <div className="w-full space-y-6">
             <Button
               size="lg"
-              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl py-7 rounded-lg shadow-lg"
+              className="animate-sheen w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl py-7 rounded-lg shadow-lg"
               asChild
             >
               <Link href="#">LIBERAR ACESSO</Link>
