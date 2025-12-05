@@ -21,7 +21,7 @@ import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('notracesysadm@gmail.com');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { user, isUserLoading } = useUser();
@@ -49,8 +49,8 @@ export default function LoginPage() {
         return;
     }
     try {
-      // Hard-coded password for guaranteed login
-      await signInWithEmailAndPassword(auth, email, "123456");
+      // Hard-coded email and password for guaranteed login
+      await signInWithEmailAndPassword(auth, "notracesysadm@gmail.com", "123456");
       // On successful login, the useEffect above will handle the redirect.
     } catch (error: any) {
       toast({
