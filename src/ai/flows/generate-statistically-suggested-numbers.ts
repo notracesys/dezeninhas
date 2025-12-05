@@ -16,6 +16,11 @@ const GenerateStatisticallySuggestedNumbersInputSchema = z.object({
     .min(1)
     .max(10)
     .describe('The number of number combinations to generate.'),
+  numbersPerCombination: z
+    .number()
+    .min(6)
+    .max(15)
+    .describe('The quantity of numbers per combination.'),
 });
 export type GenerateStatisticallySuggestedNumbersInput = z.infer<
   typeof GenerateStatisticallySuggestedNumbersInputSchema
@@ -23,7 +28,7 @@ export type GenerateStatisticallySuggestedNumbersInput = z.infer<
 
 const GenerateStatisticallySuggestedNumbersOutputSchema = z.object({
   numberCombinations: z
-    .array(z.array(z.number().min(1).max(60)).length(6))
+    .array(z.array(z.number().min(1).max(60)))
     .describe('An array of number combinations.'),
 });
 export type GenerateStatisticallySuggestedNumbersOutput = z.infer<
@@ -42,11 +47,11 @@ const generateNumbersPrompt = ai.definePrompt({
   output: {schema: GenerateStatisticallySuggestedNumbersOutputSchema},
   prompt: `You are an expert lottery number generator.
 
-  Based on statistical analysis of past Mega da Virada draws, generate {{{numberOfCombinations}}} unique combinations of 6 numbers between 1 and 60. Return the combinations as a JSON array of arrays.
+  Based on statistical analysis of past Mega da Virada draws, generate {{{numberOfCombinations}}} unique combinations of {{{numbersPerCombination}}} numbers between 1 and 60. Return the combinations as a JSON array of arrays.
 
   The numbers in each combination should be sorted in ascending order.
   The combinations must be distinct; do not return the same combination more than once.
-  Each combination must be an array of 6 numbers. No duplicates allowed in a single combination.
+  Each combination must be an array of {{{numbersPerCombination}}} numbers. No duplicates allowed in a single combination.
   `,
 });
 

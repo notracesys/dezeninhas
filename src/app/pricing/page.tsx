@@ -4,7 +4,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Lock, Loader2, Info, Ticket } from "lucide-react";
+import { ArrowLeft, CheckCircle, Lock, Loader2, Info, Ticket, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -33,6 +33,7 @@ export default function PricingPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [numberOfCombinations, setNumberOfCombinations] = useState("1");
+  const [numbersPerCombination, setNumbersPerCombination] = useState("6");
   const [accessCode, setAccessCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
@@ -50,6 +51,7 @@ export default function PricingPage() {
     
     const result = await generateNumbersAction({
       numberOfCombinations: parseInt(numberOfCombinations, 10),
+      numbersPerCombination: parseInt(numbersPerCombination, 10),
     });
 
     setIsLoading(false);
@@ -85,6 +87,7 @@ export default function PricingPage() {
           </div>
           
           <div className="flex flex-col items-center space-y-2 mb-8">
+            
             <p className="text-lg font-bold">Libere para ver os números reais</p>
             <p className="text-sm text-gray-200">Acesso imediato após pagamento</p>
           </div>
@@ -102,21 +105,37 @@ export default function PricingPage() {
               <p>Já tem um código? Insira abaixo para gerar.</p>
             </div>
 
-            <div>
-              <Label htmlFor="combinations" className="text-left block mb-2 font-semibold">Quantas combinações deseja gerar?</Label>
-              <p className="text-sm text-gray-300 mb-2 text-left">Cada combinação contém 6 números.</p>
-              <Select value={numberOfCombinations} onValueChange={setNumberOfCombinations}>
-                <SelectTrigger id="combinations" className="w-full text-black">
-                  <SelectValue placeholder="Selecione..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
-                    <SelectItem key={num} value={String(num)}>
-                      {num} {num > 1 ? 'combinações' : 'combinação'}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="combinations" className="text-left block mb-2 font-semibold">Nº de combinações</Label>
+                <Select value={numberOfCombinations} onValueChange={setNumberOfCombinations}>
+                  <SelectTrigger id="combinations" className="w-full text-black">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((num) => (
+                      <SelectItem key={num} value={String(num)}>
+                        {num} {num > 1 ? 'combinações' : 'combinação'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="numbersPerGame" className="text-left block mb-2 font-semibold">Nº por jogo</Label>
+                <Select value={numbersPerCombination} onValueChange={setNumbersPerCombination}>
+                  <SelectTrigger id="numbersPerGame" className="w-full text-black">
+                    <SelectValue placeholder="Selecione..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 10 }, (_, i) => i + 6).map((num) => (
+                      <SelectItem key={num} value={String(num)}>
+                        {num} números
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div>

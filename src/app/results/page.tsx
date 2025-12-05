@@ -42,7 +42,7 @@ function ResultsDisplay() {
       </CardHeader>
       <CardContent>
         <p className="text-center text-muted-foreground mb-8">Aqui estão suas combinações geradas por especialistas. Boa sorte!</p>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
           {combinations.map((combo, index) => (
             <div key={index} className="bg-secondary/50 rounded-lg p-4 text-center border">
               <h3 className="font-semibold text-lg text-secondary-foreground mb-3">
@@ -52,7 +52,7 @@ function ResultsDisplay() {
                 {combo.map((num) => (
                   <div
                     key={num}
-                    className="flex items-center justify-center h-12 w-12 bg-primary text-primary-foreground rounded-full font-bold text-xl shadow-md"
+                    className="flex items-center justify-center h-10 w-10 bg-primary text-primary-foreground rounded-full font-bold text-base shadow-md"
                   >
                     {String(num).padStart(2, '0')}
                   </div>
