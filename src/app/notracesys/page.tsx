@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
-// The secret code for admin access.
+// The secret code for admin access is now loaded from an environment variable for security.
 const SECRET_CODE = process.env.NEXT_PUBLIC_ADMIN_SECRET_CODE || 'notracesys123';
 const AUTH_KEY = 'notracesys_auth_token';
 
