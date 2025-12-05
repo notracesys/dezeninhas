@@ -34,7 +34,6 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy, LogOut } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { useDoc } from '@/firebase/firestore/use-doc';
 
 interface Customer {
   id: string;
@@ -44,60 +43,28 @@ interface Customer {
   accessCode?: string;
 }
 
-// Custom hook to check admin status
-function useAdminStatus() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
-
-  const adminDocRef = useMemoFirebase(() => {
-    if (!user || !firestore) return null;
-    return doc(firestore, 'roles_admin', user.uid);
-  }, [user, firestore]);
-
-  const { data: adminDoc, isLoading: isAdminLoading } = useDoc(adminDocRef);
-
-  const isAdmin = adminDoc ? adminDoc.id === user?.uid : false;
-  const isLoading = isUserLoading || (user && isAdminLoading);
-
-  return { isAdmin, isLoading };
-}
-
-
 export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user, isUserLoading, auth } = useUser();
-  const { isAdmin, isLoading: isAdminLoading } = useAdminStatus();
   const firestore = useFirestore();
 
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
-  // Effect to handle redirection based on auth status and admin role
+  // Effect to handle redirection based on auth status
   useEffect(() => {
-    const isCheckingPermissions = isUserLoading || isAdminLoading;
-    if (isCheckingPermissions) {
-      return; // Wait until all checks are complete
+    if (!isUserLoading && !user) {
+      router.push('/login');
     }
-
-    if (!user) {
-      router.push('/login'); // Not logged in
-    } else if (!isAdmin) {
-       toast({
-        variant: 'destructive',
-        title: 'Acesso Negado',
-        description: 'Você não tem permissão para acessar esta página.',
-      });
-      router.push('/login'); // Logged in but not an admin
-    }
-  }, [user, isUserLoading, isAdmin, isAdminLoading, router, toast]);
+  }, [user, isUserLoading, router]);
 
   const customersQuery = useMemoFirebase(() => {
-    // IMPORTANT: Only create the query if the user is an admin.
-    if (!firestore || !isAdmin) return null; 
+    // Only create the query if the user is logged in and firestore is available.
+    if (!firestore || !user) return null; 
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, isAdmin]);
+  }, [firestore, user]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
 
@@ -126,11 +93,10 @@ export default function AdminPage() {
       }
     };
     
-    // Only fetch codes if we are an admin and have customers
-    if (isAdmin && customers) {
+    if (user && customers) {
         fetchAccessCodes();
     }
-  }, [customers, firestore, isAdmin]);
+  }, [customers, firestore, user]);
 
   const handleLogout = async () => {
     if (auth) {
@@ -198,8 +164,8 @@ export default function AdminPage() {
     });
   };
 
-  // Display a loading spinner while checking auth status or admin role
-  if (isUserLoading || isAdminLoading) {
+  // Display a loading spinner while checking auth status
+  if (isUserLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -207,12 +173,11 @@ export default function AdminPage() {
     );
   }
 
-  // If the user is definitely not an admin, they will be redirected by the effect.
-  // This avoids rendering the page content for non-admins.
-  if (!isAdmin) {
+  // If there's no user, the effect will redirect.
+  if (!user) {
     return (
        <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <p>Redirecionando...</p>
+        <p>Redirecionando para a página de login...</p>
       </div>
     );
   }

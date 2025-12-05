@@ -2,33 +2,9 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-  
-    // Helper function to check for admin role
-    function isAdmin() {
-      // Check if a document with the user's UID exists in the 'roles_admin' collection
-      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
-    }
-
-    // Rule for the admin roles collection
-    match /roles_admin/{userId} {
-      // Allow a user to read their own admin role document to verify their status.
-      // Allow any existing admin to read/write any document in this collection.
-      allow read, write: if request.auth.uid == userId || isAdmin();
-    }
-
-    // Admins can read, list, and write to customers
-    match /customers/{customerId} {
-      allow list, read, write: if isAdmin();
-    }
-    
-    // Admins can create and read access codes. Any authenticated user can read a single code (for validation).
-    match /access_codes/{accessCodeId} {
-      // Admins can do anything
-      allow list, read, write: if isAdmin();
-      
-      // Allow a non-admin to read a specific code if they are logged in.
-      // This is for the validation step on the pricing page.
-      allow get: if request.auth != null;
+    // Regra simplificada: Permite acesso total a qualquer usuário que esteja logado.
+    match /{document=**} {
+      allow read, write, list: if request.auth != null;
     }
   }
 }
