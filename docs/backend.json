@@ -1,5 +1,21 @@
 {
   "entities": {
+    "AdminRole": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AdminRole",
+      "type": "object",
+      "description": "Represents an administrator user. The existence of a document in the 'roles_admin' collection with the user's UID as the document ID grants admin privileges.",
+      "properties": {
+        "assignedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the admin role was assigned."
+        }
+      },
+      "required": [
+        "assignedAt"
+      ]
+    },
     "Customer": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Customer",
@@ -61,6 +77,12 @@
     }
   },
   "firestore": {
+     "/roles_admin/{userId}": {
+      "schema": {
+        "$ref": "#/entities/AdminRole"
+      },
+      "description": "Stores user IDs that have administrator privileges. The document ID is the user's UID."
+    },
     "/customers/{customerId}": {
       "schema": {
         "$ref": "#/entities/Customer"

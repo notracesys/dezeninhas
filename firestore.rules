@@ -2,10 +2,30 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Estas regras permitem acesso total. A segurança do painel de administração
-    // é garantida pela sua URL secreta, que só você conhece.
-    match /{document=**} {
-      allow read, write: if true;
+  
+    // Helper function to check for admin role
+    function isAdmin() {
+      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    // Admins can read and write to customers and access codes
+    match /customers/{customerId} {
+      allow read, write: if isAdmin();
+    }
+    
+    match /access_codes/{accessCodeId} {
+       allow read, write: if isAdmin();
+    }
+    
+    // Allow anyone to read access codes if they are not used
+    // This is for the validation on the pricing page.
+    match /access_codes/{accessCodeId} {
+      allow get: if request.auth == null && resource.data.isUsed == false;
+    }
+    
+    // Only admins can read the admin roles collection
+    match /roles_admin/{userId} {
+      allow read, write: if isAdmin();
     }
   }
 }
