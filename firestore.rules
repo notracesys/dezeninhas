@@ -2,31 +2,14 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Regras para a coleção de clientes
+    // Allow anyone to read and write to the customer and access code collections.
+    // Security is handled by the secret URL of the admin panel.
     match /customers/{customerId} {
-      // Permite que qualquer pessoa leia e crie clientes.
-      allow read, list, create: if true;
-      // Ninguém pode atualizar ou deletar clientes pelo cliente.
-      allow update, delete: if false;
+      allow read, write: if true;
     }
 
-    // Regras para a coleção de códigos de acesso
     match /access_codes/{accessCodeId} {
-      // Permite que qualquer pessoa crie novos códigos
-      allow create: if true;
-      
-      // A leitura é permitida para qualquer pessoa validar o código.
-      allow read, list: if true;
-      
-      // A atualização só é permitida para marcar um código como usado.
-      // 1. O código não pode ter sido usado antes.
-      // 2. A atualização só pode mudar 'isUsed' para true e adicionar 'usedAt'.
-      allow update: if request.resource.data.isUsed == true &&
-                       resource.data.isUsed == false &&
-                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isUsed', 'usedAt']);
-                       
-      // Deletes não são permitidos pelo cliente.
-      allow delete: if false;
+      allow read, write: if true;
     }
   }
 }

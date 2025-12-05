@@ -11,6 +11,7 @@ import {
   doc,
   writeBatch,
 } from 'firebase/firestore';
+import { getAuth, signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -47,16 +48,22 @@ export default function AdminPage() {
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
-  const [isClient, setIsClient] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    // Force logout to clear any lingering auth state that might conflict with security rules.
+    const auth = getAuth();
+    signOut(auth).finally(() => {
+      // Once sign-out is complete (or if it fails, which is fine), mark the component as ready.
+      setIsReady(true);
+    });
   }, []);
 
   const customersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    // Only run the query if the component is ready and firestore is available.
+    if (!isReady || !firestore) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+  }, [firestore, isReady]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
 
@@ -85,9 +92,11 @@ export default function AdminPage() {
       }
     };
     
-    fetchAccessCodes();
+    if (isReady) {
+      fetchAccessCodes();
+    }
 
-  }, [customers, firestore]);
+  }, [customers, firestore, isReady]);
 
   const generateAccessCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -148,7 +157,7 @@ export default function AdminPage() {
     });
   };
 
-  if (!isClient) {
+  if (!isReady) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
