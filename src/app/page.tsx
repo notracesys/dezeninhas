@@ -46,6 +46,9 @@ export default function Home() {
             especialistas. Nosso objetivo é aumentar suas probabilidades, não
             garantir o resultado. Jogue com responsabilidade.
           </p>
+          <p className="mt-4 text-[10px]">
+            © {new Date().getFullYear()} Mega da Virada. Todos os direitos reservados.
+          </p>
         </div>
       </footer>
     </div>
