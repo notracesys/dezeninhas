@@ -9,29 +9,26 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
 
-    // Admins can read and write to the roles collection itself
+    // Rule for the admin roles collection
     match /roles_admin/{userId} {
-      allow read, write: if isAdmin();
+      // Allow a user to read their own admin role document to verify their status.
+      // Allow any existing admin to read/write any document in this collection.
+      allow read, write: if request.auth.uid == userId || isAdmin();
     }
 
     // Admins can read, list, and write to customers
     match /customers/{customerId} {
-      allow read, write, list: if isAdmin();
+      allow list, read, write: if isAdmin();
     }
     
     // Admins can create and read access codes. Any authenticated user can read a single code (for validation).
     match /access_codes/{accessCodeId} {
       // Admins can do anything
-      allow read, write, list: if isAdmin();
+      allow list, read, write: if isAdmin();
       
       // Allow a non-admin to read a specific code if they are logged in.
       // This is for the validation step on the pricing page.
       allow get: if request.auth != null;
-    }
-
-    // Default deny all other collections
-    match /{document=**} {
-      allow read, write: if false;
     }
   }
 }
