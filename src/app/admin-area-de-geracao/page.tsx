@@ -47,7 +47,7 @@ export default function AdminSecretPage() {
   const { toast } = useToast();
 
   const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
   
   const customersQuery = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -97,7 +97,7 @@ export default function AdminSecretPage() {
     e.preventDefault();
     if (!email.trim() || !firestore) return;
 
-    setIsLoading(true);
+    setIsCreatingCustomer(true);
 
     try {
       const batch = writeBatch(firestore);
@@ -130,7 +130,7 @@ export default function AdminSecretPage() {
         description: error.message || 'Ocorreu um problema.',
       });
     } finally {
-      setIsLoading(false);
+      setIsCreatingCustomer(false);
     }
   };
 
@@ -146,7 +146,8 @@ export default function AdminSecretPage() {
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="mx-auto max-w-4xl">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Painel de Administração Secreto</h1>
+          <h1 className="text-3xl font-bold">Painel de Administração</h1>
+          <p className="text-sm text-muted-foreground">URL Secreta</p>
         </div>
 
         <Card className="mb-8">
@@ -167,8 +168,8 @@ export default function AdminSecretPage() {
                 required
                 className="flex-grow"
               />
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? (
+              <Button type="submit" disabled={isCreatingCustomer}>
+                {isCreatingCustomer ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   'Gerar Código'
