@@ -31,6 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy, LogOut } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -41,6 +42,7 @@ interface Customer {
   accessCodeId: string;
   createdAt: any;
   accessCode?: string;
+  isUsed?: boolean;
 }
 
 export default function AdminPage() {
@@ -74,18 +76,23 @@ export default function AdminPage() {
         const customersData = await Promise.all(
           customers.map(async (customer) => {
             if (!customer.accessCodeId) {
-              return { ...customer, accessCode: 'N/A' };
+              return { ...customer, accessCode: 'N/A', isUsed: undefined };
             }
             try {
               const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
               const codeSnap = await getDoc(codeRef);
-              return {
-                ...customer,
-                accessCode: codeSnap.exists() ? codeSnap.data().code : 'N/A',
-              };
+              if (codeSnap.exists()) {
+                const codeData = codeSnap.data();
+                return {
+                  ...customer,
+                  accessCode: codeData.code,
+                  isUsed: codeData.isUsed,
+                };
+              }
+              return { ...customer, accessCode: 'N/A', isUsed: undefined };
             } catch (error) {
               console.error(`Failed to fetch access code for customer ${customer.id}`, error);
-              return { ...customer, accessCode: 'Erro' };
+              return { ...customer, accessCode: 'Erro', isUsed: undefined };
             }
           })
         );
@@ -233,13 +240,14 @@ export default function AdminPage() {
                   <TableRow>
                     <TableHead>Email</TableHead>
                     <TableHead>Código de Acesso</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Data de Criação</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoadingCustomers ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">
+                      <TableCell colSpan={4} className="text-center">
                         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                       </TableCell>
                     </TableRow>
@@ -263,13 +271,24 @@ export default function AdminPage() {
                           </div>
                         </TableCell>
                         <TableCell>
+                          {typeof customer.isUsed === 'boolean' ? (
+                              customer.isUsed ? (
+                                <Badge variant="destructive">Utilizado</Badge>
+                              ) : (
+                                <Badge className="bg-green-600">Disponível</Badge>
+                              )
+                          ) : (
+                            <Badge variant="secondary">N/A</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           {customer.createdAt?.toDate ? customer.createdAt?.toDate().toLocaleDateString('pt-BR') : 'Carregando...'}
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">
+                      <TableCell colSpan={4} className="text-center">
                         Nenhum cliente encontrado.
                       </TableCell>
                     </TableRow>
