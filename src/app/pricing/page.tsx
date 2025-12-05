@@ -65,18 +65,18 @@ export default function PricingPage() {
     }
   };
   
-  const isButtonDisabled = isLoading || accessCode.trim().toUpperCase() !== ACCESS_CODE;
+  const isButtonDisabled = isLoading || accessCode.trim().toUpperCase() !== ACCESS_CODE.toUpperCase();
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--accent))] to-green-800 text-foreground p-4 sm:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--primary))] to-green-800 text-foreground p-4 sm:p-8">
         <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
           <ArrowLeft size={16} />
           Voltar
         </Link>
         <div className="max-w-md mx-auto flex flex-col items-center text-center">
           <h1 className="text-3xl sm:text-5xl font-bold mt-12 text-white">Acesso às Dezenas da Virada</h1>
-          <p className="text-5xl sm:text-7xl font-bold text-white my-4">
+          <p className="text-5xl sm:text-7xl font-bold text-yellow-400 my-4">
             R$ 14,90
           </p>
           <p className="text-lg text-slate-200">Apenas uma única liberação por jogo.</p>
@@ -93,7 +93,7 @@ export default function PricingPage() {
           <div className="w-full space-y-6 bg-white/90 p-6 rounded-lg shadow-xl">
             <Button
               size="lg"
-              className="animate-sheen w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl py-7 rounded-lg shadow-lg"
+              className="animate-sheen w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xl py-7 rounded-lg shadow-lg"
               asChild
             >
               <Link href="#">LIBERAR ACESSO</Link>
