@@ -58,7 +58,7 @@ export default function AdminPage() {
   // Redirect if not logged in
   useEffect(() => {
     if (!isUserLoading && !user) {
-      router.push('/login');
+      router.push('/notracesys');
     }
   }, [user, isUserLoading, router]);
 
@@ -108,7 +108,7 @@ export default function AdminPage() {
   const handleLogout = async () => {
     if (auth) {
       await signOut(auth);
-      router.push('/login');
+      router.push('/notracesys');
     }
   };
 
