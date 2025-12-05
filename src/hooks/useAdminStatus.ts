@@ -12,17 +12,21 @@ export function useAdminStatus(user: User | null) {
 
   useEffect(() => {
     const checkAdminStatus = async () => {
+      // Condição 1: Se não há usuário, não é admin. Fim da verificação.
       if (!user) {
         setIsAdmin(false);
         setIsLoading(false);
         return;
       }
       
+      // Condição 2 (NOVA): Se o firestore ainda não estiver pronto, espere.
+      // Não tome nenhuma decisão prematura.
       if (!firestore) {
-        setIsLoading(true);
+        setIsLoading(true); // Continue no estado de carregamento.
         return;
       }
 
+      // Se há usuário e firestore está pronto, comece a verificação.
       setIsLoading(true);
       try {
         const adminRoleRef = doc(firestore, 'roles_admin', user.uid);
@@ -32,12 +36,13 @@ export function useAdminStatus(user: User | null) {
         console.error('Error checking admin status:', error);
         setIsAdmin(false);
       } finally {
+        // A verificação terminou, seja com sucesso ou erro.
         setIsLoading(false);
       }
     };
 
     checkAdminStatus();
-  }, [user, firestore]);
+  }, [user, firestore]); // A verificação agora depende do user E do firestore.
 
   return { isAdmin, isAdminLoading };
 }
