@@ -11,6 +11,6 @@ export async function generateNumbersAction(
     return { success: true, data: result };
   } catch (error) {
     console.error(error);
-    return { success: false, error: "Failed to generate numbers." };
+    return { success: false, error: "Falha ao gerar dezenas." };
   }
 }

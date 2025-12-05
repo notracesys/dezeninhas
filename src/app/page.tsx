@@ -23,7 +23,7 @@ export default function Home() {
             Aumente Suas Chances
           </h2>
           <p className="mt-6 max-w-lg text-lg text-slate-600">
-            Este site consiste em números que foram estudados e gerados por
+            Este site consiste em dezenas que foram estudadas e geradas por
             especialistas.
           </p>
           <Button
@@ -31,7 +31,7 @@ export default function Home() {
             size="sm"
             className="animate-sheen mt-8 transform rounded-lg bg-primary px-6 py-3 text-base font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90"
           >
-            <Link href="/pricing">QUERO GERAR MEUS NÚMEROS</Link>
+            <Link href="/pricing">QUERO GERAR MINHAS DEZENAS</Link>
           </Button>
         </main>
       </div>
@@ -39,8 +39,8 @@ export default function Home() {
         <div className="mx-auto max-w-3xl text-center text-slate-500">
           <h3 className="font-bold text-xs mb-1">Aviso Importante</h3>
           <p className="text-[10px]">
-            Os números que você obterá em nosso sistema não são uma garantia de
-            premiação. Eles são sugestões geradas com base em resoluções
+            As dezenas que você obterá em nosso sistema não são uma garantia de
+            premiação. Elas são sugestões geradas com base em resoluções
             matemáticas, raciocínio lógico e um profundo estudo estatístico sobre
             todos os resultados históricos da Mega-Sena, realizado por
             especialistas. Nosso objetivo é aumentar suas probabilidades, não

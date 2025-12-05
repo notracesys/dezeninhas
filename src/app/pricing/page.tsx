@@ -59,7 +59,7 @@ export default function PricingPage() {
     } else {
       toast({
         variant: "destructive",
-        title: "Erro ao gerar números",
+        title: "Erro ao gerar dezenas",
         description: result.error || "Ocorreu um erro. Tente novamente mais tarde.",
       });
     }
@@ -73,7 +73,7 @@ export default function PricingPage() {
           Voltar
         </Link>
         <div className="max-w-md mx-auto flex flex-col items-center text-center">
-          <h1 className="text-3xl sm:text-5xl font-bold mt-12">Acesso aos Números da Virada</h1>
+          <h1 className="text-3xl sm:text-5xl font-bold mt-12">Acesso às Dezenas da Virada</h1>
           <p className="text-5xl sm:text-7xl font-bold text-yellow-300 my-4">
             R$ 14,90
           </p>
@@ -84,7 +84,7 @@ export default function PricingPage() {
           </div>
           
           <div className="flex flex-col items-center space-y-2 mb-8">
-            <p className="text-lg font-bold">Libere para ver os números reais</p>
+            <p className="text-lg font-bold">Libere para ver as dezenas reais</p>
             <p className="text-sm text-gray-200">Acesso imediato após pagamento</p>
           </div>
 
@@ -103,7 +103,7 @@ export default function PricingPage() {
 
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <Label htmlFor="numbersPerGame" className="text-left block mb-2 font-semibold">Nº por jogo</Label>
+                <Label htmlFor="numbersPerGame" className="text-left block mb-2 font-semibold">Dezenas por jogo</Label>
                 <Select value={numbersPerCombination} onValueChange={setNumbersPerCombination}>
                   <SelectTrigger id="numbersPerGame" className="w-full text-black">
                     <SelectValue placeholder="Selecione..." />
@@ -111,7 +111,7 @@ export default function PricingPage() {
                   <SelectContent>
                     {Array.from({ length: 10 }, (_, i) => i + 6).map((num) => (
                       <SelectItem key={num} value={String(num)}>
-                        {num} números
+                        {num} dezenas
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -149,7 +149,7 @@ export default function PricingPage() {
               onClick={handleGenerateNumbers}
               disabled={isLoading || accessCode.trim().toUpperCase() !== ACCESS_CODE}
             >
-              {isLoading ? <Loader2 className="animate-spin" /> : <><Ticket className="mr-2" /> GERAR NÚMEROS</>}
+              {isLoading ? <Loader2 className="animate-spin" /> : <><Ticket className="mr-2" /> GERAR DEZENAS</>}
             </Button>
           </div>
 
@@ -160,7 +160,7 @@ export default function PricingPage() {
             </div>
             <div className="flex items-center gap-3">
               <CheckCircle className="text-yellow-300 h-5 w-5 shrink-0" />
-              <p>Números exclusivos que não aparecem gratuitamente</p>
+              <p>Dezenas exclusivas que não aparecem gratuitamente</p>
             </div>
             <div className="flex items-center gap-3">
               <CheckCircle className="text-yellow-300 h-5 w-5 shrink-0" />

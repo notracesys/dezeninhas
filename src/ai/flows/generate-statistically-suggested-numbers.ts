@@ -15,7 +15,7 @@ const GenerateStatisticallySuggestedNumbersInputSchema = z.object({
     .number()
     .min(6)
     .max(15)
-    .describe('The quantity of numbers per combination.'),
+    .describe('A quantidade de dezenas por combinação.'),
 });
 export type GenerateStatisticallySuggestedNumbersInput = z.infer<
   typeof GenerateStatisticallySuggestedNumbersInputSchema

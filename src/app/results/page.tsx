@@ -24,8 +24,8 @@ function ResultsDisplay() {
   if (combinations.length === 0) {
     return (
       <div className="text-center">
-        <p className="text-xl text-destructive">Não foi possível carregar os números.</p>
-        <p className="mt-2 text-muted-foreground">Por favor, tente gerar os números novamente.</p>
+        <p className="text-xl text-destructive">Não foi possível carregar as dezenas.</p>
+        <p className="mt-2 text-muted-foreground">Por favor, tente gerar as dezenas novamente.</p>
         <Button asChild className="mt-4">
           <Link href="/pricing">Voltar</Link>
         </Button>
@@ -39,7 +39,7 @@ function ResultsDisplay() {
         <div className="mx-auto bg-primary text-primary-foreground rounded-full p-3 w-fit mb-4">
             <Ticket size={40} />
         </div>
-        <CardTitle className="text-3xl font-bold text-primary">Seus Números da Sorte!</CardTitle>
+        <CardTitle className="text-3xl font-bold text-primary">Suas Dezenas da Sorte!</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-center text-muted-foreground mb-8">Aqui estão suas combinações geradas por especialistas. Boa sorte!</p>

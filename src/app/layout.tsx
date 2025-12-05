@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 export const metadata: Metadata = {
   title: 'Mega Millions Maximizer',
   description:
-    'Gere combinações de números estudados e estatisticamente sugeridos para o sorteio da Mega da Virada.',
+    'Gere combinações de dezenas estudadas e estatisticamente sugeridas para o sorteio da Mega da Virada.',
 };
 
 export default function RootLayout({
