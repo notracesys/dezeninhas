@@ -69,28 +69,28 @@ export default function PricingPage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-background text-foreground p-4 sm:p-8">
-        <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-foreground/80 hover:text-foreground transition-colors">
+      <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--accent))] to-green-800 text-foreground p-4 sm:p-8">
+        <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
           <ArrowLeft size={16} />
           Voltar
         </Link>
         <div className="max-w-md mx-auto flex flex-col items-center text-center">
-          <h1 className="text-3xl sm:text-5xl font-bold mt-12 text-slate-800">Acesso às Dezenas da Virada</h1>
-          <p className="text-5xl sm:text-7xl font-bold text-accent my-4">
+          <h1 className="text-3xl sm:text-5xl font-bold mt-12 text-white">Acesso às Dezenas da Virada</h1>
+          <p className="text-5xl sm:text-7xl font-bold text-white my-4">
             R$ 14,90
           </p>
-          <p className="text-lg text-slate-600">Apenas uma única liberação por jogo.</p>
+          <p className="text-lg text-slate-200">Apenas uma única liberação por jogo.</p>
           
           <div className="relative my-8 w-full max-w-sm -rotate-3">
              <BlockedNumbersCard />
           </div>
           
           <div className="flex flex-col items-center space-y-2 mb-8">
-            <p className="text-lg font-bold text-slate-800">Libere para ver as dezenas reais</p>
-            <p className="text-sm text-slate-500">Acesso imediato após pagamento</p>
+            <p className="text-lg font-bold text-white">Libere para ver as dezenas reais</p>
+            <p className="text-sm text-slate-200">Acesso imediato após pagamento</p>
           </div>
 
-          <div className="w-full space-y-6">
+          <div className="w-full space-y-6 bg-white/90 p-6 rounded-lg shadow-xl">
             <Button
               size="lg"
               className="animate-sheen w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl py-7 rounded-lg shadow-lg"
@@ -155,17 +155,17 @@ export default function PricingPage() {
             </Button>
           </div>
 
-          <div className="mt-8 space-y-3 text-left w-full text-slate-700">
+          <div className="mt-8 space-y-3 text-left w-full text-slate-100">
             <div className="flex items-center gap-3">
-              <CheckCircle className="text-accent h-5 w-5 shrink-0" />
+              <CheckCircle className="text-white h-5 w-5 shrink-0" />
               <p>Resultados gerados por especialistas</p>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle className="text-accent h-5 w-5 shrink-0" />
+              <CheckCircle className="text-white h-5 w-5 shrink-0" />
               <p>Dezenas exclusivas que não aparecem gratuitamente</p>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle className="text-accent h-5 w-5 shrink-0" />
+              <CheckCircle className="text-white h-5 w-5 shrink-0" />
               <p>Libere o acesso imediato</p>
             </div>
           </div>
