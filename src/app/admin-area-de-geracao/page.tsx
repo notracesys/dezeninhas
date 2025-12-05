@@ -1,16 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useFirestore, useMemoFirebase } from '@/firebase';
+import { useAuth, useFirestore, useMemoFirebase } from '@/firebase';
 import {
   collection,
-  addDoc,
   serverTimestamp,
   query,
   orderBy,
-  getDocs,
-  doc,
   getDoc,
+  doc,
   writeBatch,
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -33,6 +31,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
+import { signOut } from 'firebase/auth';
 
 interface Customer {
   id: string;
@@ -44,15 +43,30 @@ interface Customer {
 
 export default function AdminSecretPage() {
   const firestore = useFirestore();
+  const auth = useAuth();
   const { toast } = useToast();
 
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
-  
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // Forçar o logout de qualquer usuário que possa estar em cache
+    if (auth && auth.currentUser) {
+      signOut(auth).then(() => {
+        setIsReady(true);
+      }).catch(() => {
+        setIsReady(true); // Mesmo que o logout falhe, tente continuar
+      });
+    } else {
+      setIsReady(true);
+    }
+  }, [auth]);
+
   const customersQuery = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !isReady) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore]);
+  }, [firestore, isReady]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
@@ -63,7 +77,7 @@ export default function AdminSecretPage() {
         const customersData = await Promise.all(
           customers.map(async (customer) => {
             if (!customer.accessCodeId) {
-                 return { ...customer, accessCode: 'N/A' };
+              return { ...customer, accessCode: 'N/A' };
             }
             try {
               const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
@@ -73,16 +87,19 @@ export default function AdminSecretPage() {
                 accessCode: codeSnap.exists() ? codeSnap.data().code : 'N/A',
               };
             } catch (error) {
-               console.error(`Failed to fetch access code for customer ${customer.id}`, error);
-               return { ...customer, accessCode: 'Erro' };
+              console.error(`Failed to fetch access code for customer ${customer.id}`, error);
+              return { ...customer, accessCode: 'Erro' };
             }
           })
         );
         setCustomersWithCodes(customersData);
       }
     };
-    fetchAccessCodes();
-  }, [customers, firestore]);
+
+    if(isReady){
+      fetchAccessCodes();
+    }
+  }, [customers, firestore, isReady]);
 
   const generateAccessCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -107,6 +124,7 @@ export default function AdminSecretPage() {
         code: newCode,
         isUsed: false,
         createdAt: serverTimestamp(),
+        usedAt: null,
       });
 
       const customerRef = doc(collection(firestore, 'customers'));
@@ -141,6 +159,14 @@ export default function AdminSecretPage() {
       description: 'Código de acesso copiado para a área de transferência.',
     });
   };
+  
+  if (!isReady) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <Loader2 className="h-12 w-12 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
