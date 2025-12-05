@@ -29,7 +29,7 @@ export default function Home() {
           <Button
             asChild
             size="lg"
-            className="mt-8 transform rounded-lg bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90"
+            className="mt-8 transform rounded-lg bg-primary px-6 py-3 text-base font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90"
           >
             <Link href="/pricing">QUERO GERAR MEUS NÚMEROS</Link>
           </Button>
