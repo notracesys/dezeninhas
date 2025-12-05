@@ -84,7 +84,7 @@ export default function PricingPage() {
           </div>
           
           <div className="flex flex-col items-center space-y-2 mb-8">
-            <p className="font-semibold">Conteúdo bloqueado</p>
+            <p className="text-accent font-bold uppercase tracking-wider">Conteúdo bloqueado</p>
             <p className="text-lg font-bold">Libere para ver os números reais</p>
             <p className="text-sm text-gray-200">Acesso imediato após pagamento</p>
           </div>
