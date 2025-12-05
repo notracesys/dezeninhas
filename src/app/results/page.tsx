@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Ticket } from "lucide-react";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 function ResultsDisplay() {
   const searchParams = useSearchParams();
@@ -48,16 +49,19 @@ function ResultsDisplay() {
               <h3 className="font-semibold text-lg text-secondary-foreground mb-3">
                 Combinação #{index + 1}
               </h3>
-              <div className="flex flex-wrap justify-center gap-2">
-                {combo.map((num) => (
-                  <div
-                    key={num}
-                    className="flex items-center justify-center h-10 w-10 bg-primary text-primary-foreground rounded-full font-bold text-base shadow-md"
-                  >
-                    {String(num).padStart(2, '0')}
-                  </div>
-                ))}
-              </div>
+              <ScrollArea className="w-full whitespace-nowrap rounded-md">
+                <div className="flex w-max space-x-2 p-2 justify-center">
+                  {combo.map((num) => (
+                    <div
+                      key={num}
+                      className="flex items-center justify-center h-10 w-10 flex-shrink-0 bg-primary text-primary-foreground rounded-full font-bold text-base shadow-md"
+                    >
+                      {String(num).padStart(2, '0')}
+                    </div>
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
             </div>
           ))}
         </div>
