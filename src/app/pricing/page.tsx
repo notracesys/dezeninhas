@@ -64,6 +64,8 @@ export default function PricingPage() {
       });
     }
   };
+  
+  const isButtonDisabled = isLoading || accessCode.trim().toUpperCase() !== ACCESS_CODE;
 
   return (
     <TooltipProvider>
@@ -109,7 +111,7 @@ export default function PricingPage() {
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 10 }, (_, i) => i + 6).map((num) => (
+                    {Array.from({ length: 15 }, (_, i) => i + 6).map((num) => (
                       <SelectItem key={num} value={String(num)}>
                         {num} dezenas
                       </SelectItem>
@@ -147,7 +149,7 @@ export default function PricingPage() {
               size="lg"
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg py-6 rounded-lg shadow-md"
               onClick={handleGenerateNumbers}
-              disabled={isLoading || accessCode.trim().toUpperCase() !== ACCESS_CODE}
+              disabled={isButtonDisabled}
             >
               {isLoading ? <Loader2 className="animate-spin" /> : <><Ticket className="mr-2" /> GERAR DEZENAS</>}
             </Button>
