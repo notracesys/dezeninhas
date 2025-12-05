@@ -48,66 +48,66 @@ export default function PricingPage() {
   }, [isGenerating, generatedNumbers, router]);
 
   const validateAccessCode = async (code: string) => {
-    if (!code) {
+    if (!firestore || !code) {
       setIsCodeValid(false);
-      return;
+      return false;
     }
     const accessCodesRef = collection(firestore, "access_codes");
     const q = query(accessCodesRef, where("code", "==", code.toUpperCase().trim()));
-    const querySnapshot = await getDocs(q);
+    
+    try {
+        const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
-      setIsCodeValid(false);
-      return;
-    }
+        if (querySnapshot.empty) {
+          setIsCodeValid(false);
+          return false;
+        }
 
-    const accessCodeDoc = querySnapshot.docs[0];
-    if (accessCodeDoc.data().isUsed) {
-      setIsCodeValid(false);
-      toast({
-        variant: "destructive",
-        title: "Código Já Utilizado",
-        description: "Este código de acesso já foi utilizado para gerar dezenas.",
-      });
-    } else {
-      setIsCodeValid(true);
+        const accessCodeDoc = querySnapshot.docs[0];
+        if (accessCodeDoc.data().isUsed) {
+          setIsCodeValid(false);
+          toast({
+            variant: "destructive",
+            title: "Código Já Utilizado",
+            description: "Este código de acesso já foi utilizado para gerar dezenas.",
+          });
+          return false;
+        } else {
+          setIsCodeValid(true);
+          return true;
+        }
+    } catch (error) {
+        console.error("Error validating access code:", error);
+        setIsCodeValid(false);
+        return false;
     }
   };
 
   useEffect(() => {
     const debounce = setTimeout(() => {
       validateAccessCode(accessCode);
-    }, 500);
+    }, 300); // Shorter debounce for better UX
     return () => clearTimeout(debounce);
   }, [accessCode, firestore]);
 
   const startGenerationProcess = async () => {
     setIsLoading(true);
 
+    const isValid = await validateAccessCode(accessCode);
+    if (!isValid) {
+         toast({
+            variant: "destructive",
+            title: "Código de Acesso Inválido",
+            description: "Por favor, verifique seu código e tente novamente.",
+          });
+      setIsLoading(false);
+      return;
+    }
+    
     const accessCodesRef = collection(firestore, "access_codes");
     const q = query(accessCodesRef, where("code", "==", accessCode.toUpperCase().trim()));
     const querySnapshot = await getDocs(q);
-
-    if (querySnapshot.empty) {
-      toast({
-        variant: "destructive",
-        title: "Código de Acesso Inválido",
-        description: "Por favor, verifique seu código e tente novamente.",
-      });
-      setIsLoading(false);
-      return;
-    }
-
     const accessCodeDoc = querySnapshot.docs[0];
-    if (accessCodeDoc.data().isUsed) {
-      toast({
-        variant: "destructive",
-        title: "Código Já Utilizado",
-        description: "Este código não pode ser usado novamente.",
-      });
-      setIsLoading(false);
-      return;
-    }
 
     const result = await generateNumbersAction({
       numbersPerCombination: parseInt(numbersPerCombination, 10),
@@ -116,7 +116,7 @@ export default function PricingPage() {
     if (result.success && result.data?.numberCombinations) {
       try {
         const batch = writeBatch(firestore);
-        batch.update(accessCodeDoc.ref, { isUsed: true });
+        batch.update(accessCodeDoc.ref, { isUsed: true, usedAt: new Date() });
         await batch.commit();
         
         setGeneratedNumbers(result.data);
@@ -141,7 +141,7 @@ export default function PricingPage() {
     }
   };
   
-  const isButtonDisabled = isLoading || !isCodeValid;
+  const isButtonDisabled = isLoading || !isCodeValid || !accessCode;
 
   return (
     <TooltipProvider>
