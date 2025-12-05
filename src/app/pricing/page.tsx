@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Loader2, Info, Ticket } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, Info, Ticket, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,7 @@ import {
 import { BlockedNumbersCard } from "@/components/blocked-numbers-card";
 import { GeneratingLoader } from "@/components/generating-loader";
 import { useFirestore } from "@/firebase";
-import { collection, query, where, getDocs, writeBatch } from "firebase/firestore";
+import { collection, query, where, getDocs, writeBatch, serverTimestamp } from "firebase/firestore";
 
 export default function PricingPage() {
   const router = useRouter();
@@ -33,10 +33,15 @@ export default function PricingPage() {
   const firestore = useFirestore();
   const [numbersPerCombination, setNumbersPerCombination] = useState("6");
   const [accessCode, setAccessCode] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
+  const [isCodeVerified, setIsCodeVerified] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedNumbers, setGeneratedNumbers] = useState<GenerateNumbersOutput | null>(null);
-  const [isCodeValid, setIsCodeValid] = useState(false);
+  
+  useEffect(() => {
+    // Reset verification if the code changes
+    setIsCodeVerified(false);
+  }, [accessCode]);
 
   useEffect(() => {
     if (isGenerating && generatedNumbers) {
@@ -47,68 +52,76 @@ export default function PricingPage() {
     }
   }, [isGenerating, generatedNumbers, router]);
 
-  const validateAccessCode = async (code: string) => {
-    if (!firestore || !code) {
-      setIsCodeValid(false);
-      return false;
-    }
+  const handleVerifyCode = async () => {
+    if (!firestore || !accessCode) return;
+
+    setIsVerifyingCode(true);
+    setIsCodeVerified(false);
+
     const accessCodesRef = collection(firestore, "access_codes");
-    const q = query(accessCodesRef, where("code", "==", code.toUpperCase().trim()));
-    
+    const q = query(accessCodesRef, where("code", "==", accessCode.toUpperCase().trim()));
+
     try {
-        const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(q);
 
-        if (querySnapshot.empty) {
-          setIsCodeValid(false);
-          return false;
-        }
+      if (querySnapshot.empty) {
+        toast({
+          variant: "destructive",
+          title: "Código Inválido",
+          description: "O código de acesso inserido não foi encontrado.",
+        });
+        return;
+      }
 
-        const accessCodeDoc = querySnapshot.docs[0];
-        if (accessCodeDoc.data().isUsed) {
-          setIsCodeValid(false);
-          toast({
-            variant: "destructive",
-            title: "Código Já Utilizado",
-            description: "Este código de acesso já foi utilizado para gerar dezenas.",
-          });
-          return false;
-        } else {
-          setIsCodeValid(true);
-          return true;
-        }
+      const accessCodeDoc = querySnapshot.docs[0];
+      if (accessCodeDoc.data().isUsed) {
+        toast({
+          variant: "destructive",
+          title: "Código Já Utilizado",
+          description: "Este código de acesso já foi resgatado.",
+        });
+        return;
+      }
+
+      // If we reach here, the code is valid and unused
+      setIsCodeVerified(true);
+      toast({
+        title: "Código Válido!",
+        description: "Seu código foi verificado com sucesso.",
+        className: "bg-green-600 text-white",
+      });
+
     } catch (error) {
-        console.error("Error validating access code:", error);
-        setIsCodeValid(false);
-        return false;
+      console.error("Error validating access code:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro de Validação",
+        description: "Não foi possível validar o código. Tente novamente.",
+      });
+    } finally {
+      setIsVerifyingCode(false);
     }
   };
 
-  useEffect(() => {
-    const debounce = setTimeout(() => {
-      validateAccessCode(accessCode);
-    }, 300); // Shorter debounce for better UX
-    return () => clearTimeout(debounce);
-  }, [accessCode, firestore]);
-
   const startGenerationProcess = async () => {
-    setIsLoading(true);
-
-    const isValid = await validateAccessCode(accessCode);
-    if (!isValid) {
-         toast({
-            variant: "destructive",
-            title: "Código de Acesso Inválido",
-            description: "Por favor, verifique seu código e tente novamente.",
-          });
-      setIsLoading(false);
+    // Final check to ensure code is verified before proceeding
+    if (!isCodeVerified || !firestore) {
+      toast({
+        variant: "destructive",
+        title: "Código Não Verificado",
+        description: "Por favor, verifique seu código de acesso antes de gerar as dezenas.",
+      });
       return;
     }
-    
+
+    setIsGenerating(true); // Changed from setIsLoading to setIsGenerating
+
     const accessCodesRef = collection(firestore, "access_codes");
     const q = query(accessCodesRef, where("code", "==", accessCode.toUpperCase().trim()));
     const querySnapshot = await getDocs(q);
     const accessCodeDoc = querySnapshot.docs[0];
 
+    // Use the AI generation action
     const result = await generateNumbersAction({
       numbersPerCombination: parseInt(numbersPerCombination, 10),
     });
@@ -116,32 +129,32 @@ export default function PricingPage() {
     if (result.success && result.data?.numberCombinations) {
       try {
         const batch = writeBatch(firestore);
-        batch.update(accessCodeDoc.ref, { isUsed: true, usedAt: new Date() });
+        batch.update(accessCodeDoc.ref, { isUsed: true, usedAt: serverTimestamp() });
         await batch.commit();
         
         setGeneratedNumbers(result.data);
-        setIsGenerating(true);
+        // The useEffect for navigation will handle the redirect
 
       } catch (error) {
          console.error("Error updating access code: ", error);
          toast({
             variant: "destructive",
-            title: "Erro ao validar código",
+            title: "Erro ao Finalizar",
             description: "Não foi possível marcar o código como utilizado. Tente novamente.",
          });
-         setIsLoading(false);
+         setIsGenerating(false); // Stop generation process on error
       }
     } else {
       toast({
         variant: "destructive",
-        title: "Erro ao gerar dezenas",
+        title: "Erro ao Gerar Dezenas",
         description: result.error || "Ocorreu um erro. Tente novamente mais tarde.",
       });
-      setIsLoading(false); 
+      setIsGenerating(false); // Stop generation process on error
     }
   };
   
-  const isButtonDisabled = isLoading || !isCodeValid || !accessCode;
+  const isGenerationButtonDisabled = isGenerating || !isCodeVerified;
 
   return (
     <TooltipProvider>
@@ -177,7 +190,7 @@ export default function PricingPage() {
             </Button>
             
             <div className="text-center text-sm text-slate-500">
-              <p>Já tem um código? Insira abaixo para gerar.</p>
+              <p>Já tem um código? Insira e valide-o abaixo para gerar.</p>
             </div>
 
             <div className="grid grid-cols-1 gap-4">
@@ -200,7 +213,7 @@ export default function PricingPage() {
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <Label htmlFor="access-code" className="text-left block font-semibold text-slate-700">Insira seu código de acesso</Label>
+                <Label htmlFor="access-code" className="text-left block font-semibold text-slate-700">Seu código de acesso</Label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Info size={16} className="text-gray-500 cursor-help" />
@@ -210,15 +223,22 @@ export default function PricingPage() {
                   </TooltipContent>
                 </Tooltip>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
                 <Input 
                   id="access-code" 
                   placeholder="Seu código aqui..." 
                   className="flex-grow text-black" 
                   value={accessCode}
                   onChange={(e) => setAccessCode(e.target.value)}
+                  disabled={isVerifyingCode || isCodeVerified}
                   aria-label="Código de Acesso"
                 />
+                <Button
+                  onClick={handleVerifyCode}
+                  disabled={isVerifyingCode || !accessCode || isCodeVerified}
+                >
+                  {isVerifyingCode ? <Loader2 className="animate-spin" /> : <Check />}
+                </Button>
               </div>
             </div>
 
@@ -226,9 +246,9 @@ export default function PricingPage() {
               size="lg"
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg py-6 rounded-lg shadow-md"
               onClick={startGenerationProcess}
-              disabled={isButtonDisabled}
+              disabled={isGenerationButtonDisabled}
             >
-              {isLoading ? <Loader2 className="animate-spin" /> : <><Ticket className="mr-2" /> GERAR DEZENAS</>}
+              {isGenerating ? <Loader2 className="animate-spin" /> : <><Ticket className="mr-2" /> GERAR DEZENAS</>}
             </Button>
           </div>
 

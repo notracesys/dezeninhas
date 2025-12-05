@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import {
@@ -11,6 +11,7 @@ import {
   getDoc,
   doc,
   writeBatch,
+  Timestamp,
 } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,13 +33,24 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy, LogOut } from 'lucide-react';
-import { useCollection } from '@/firebase/firestore/use-collection';
+import { useCollection, WithId } from '@/firebase/firestore/use-collection';
 
-interface Customer {
-  id: string;
+// Raw interfaces from Firestore
+interface CustomerDoc {
   email: string;
   accessCodeId: string;
-  createdAt: any;
+  createdAt: Timestamp;
+}
+
+interface AccessCodeDoc {
+  code: string;
+  isUsed: boolean;
+  createdAt: Timestamp;
+  usedAt: Timestamp | null;
+}
+
+// Combined interface for display
+interface CustomerView extends WithId<CustomerDoc> {
   accessCode?: string;
   isUsed?: boolean;
 }
@@ -53,7 +65,8 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
-  const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
+  const [customersView, setCustomersView] = useState<CustomerView[]>([]);
+  const [isViewLoading, setIsViewLoading] = useState(true);
 
   // Simple, robust authentication check.
   useEffect(() => {
@@ -69,42 +82,50 @@ export default function AdminPage() {
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
   }, [firestore, isAuthenticated]);
 
-  const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
+  const { data: customers, isLoading: isLoadingCustomers } = useCollection<CustomerDoc>(customersQuery);
 
   useEffect(() => {
-    const fetchAccessCodes = async () => {
-      if (customers && firestore) {
-        const customersData = await Promise.all(
-          customers.map(async (customer) => {
-            if (!customer.accessCodeId) {
-              return { ...customer, accessCode: 'N/A', isUsed: undefined };
-            }
-            try {
-              const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
-              const codeSnap = await getDoc(codeRef);
-              if (codeSnap.exists()) {
-                const codeData = codeSnap.data();
-                return {
-                  ...customer,
-                  accessCode: codeData.code,
-                  isUsed: codeData.isUsed,
-                };
-              }
-              return { ...customer, accessCode: 'N/A', isUsed: undefined };
-            } catch (error) {
-              console.error(`Failed to fetch access code for customer ${customer.id}`, error);
-              return { ...customer, accessCode: 'Erro', isUsed: undefined };
-            }
-          })
-        );
-        setCustomersWithCodes(customersData);
+    const processCustomers = async () => {
+      if (!customers || !firestore) {
+        if (!isLoadingCustomers) {
+           setIsViewLoading(false);
+        }
+        return;
       }
+      
+      setIsViewLoading(true);
+
+      const viewData = await Promise.all(
+        customers.map(async (customer) => {
+          try {
+            const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
+            const codeSnap = await getDoc(codeRef);
+            if (codeSnap.exists()) {
+              const codeData = codeSnap.data() as AccessCodeDoc;
+              return {
+                ...customer,
+                accessCode: codeData.code,
+                isUsed: codeData.isUsed,
+              };
+            }
+          } catch (error) {
+            console.error(`Failed to fetch access code for customer ${customer.id}`, error);
+            // Return customer data even if code fetch fails
+            return { ...customer, accessCode: 'Erro', isUsed: undefined };
+          }
+          // Return customer if code doesn't exist for some reason
+          return { ...customer, accessCode: 'N/A', isUsed: undefined };
+        })
+      );
+      
+      setCustomersView(viewData);
+      setIsViewLoading(false);
     };
+
+    processCustomers();
     
-    if (isAuthenticated && customers) {
-        fetchAccessCodes();
-    }
-  }, [customers, firestore, isAuthenticated]);
+  }, [customers, firestore, isLoadingCustomers]);
+
 
   const handleLogout = () => {
     sessionStorage.removeItem(AUTH_KEY);
@@ -129,6 +150,7 @@ export default function AdminPage() {
     try {
       const batch = writeBatch(firestore);
       const newCode = generateAccessCode();
+      
       const accessCodeRef = doc(collection(firestore, 'access_codes'));
       batch.set(accessCodeRef, {
         code: newCode,
@@ -145,13 +167,14 @@ export default function AdminPage() {
       });
 
       await batch.commit();
+      
       toast({
         title: 'Cliente e Código Criados!',
         description: `Código ${newCode} gerado para ${email}.`,
       });
       setEmail('');
     } catch (error: any) {
-      console.error(error);
+      console.error("Error creating customer:", error);
       toast({
         variant: 'destructive',
         title: 'Erro ao criar cliente',
@@ -170,20 +193,10 @@ export default function AdminPage() {
     });
   };
 
-  // Display a loading spinner while checking auth status
   if (isAuthenticated === null) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // If not authenticated, the effect will redirect. This is a fallback UI.
-  if (!isAuthenticated) {
-     return (
-       <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <p>Redirecionando...</p>
       </div>
     );
   }
@@ -216,6 +229,7 @@ export default function AdminPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="flex-grow"
+                disabled={isCreatingCustomer}
               />
               <Button type="submit" disabled={isCreatingCustomer}>
                 {isCreatingCustomer ? (
@@ -244,20 +258,20 @@ export default function AdminPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoadingCustomers ? (
+                  {isViewLoading ? (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center">
                         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                       </TableCell>
                     </TableRow>
-                  ) : customersWithCodes.length > 0 ? (
-                    customersWithCodes.map((customer) => (
+                  ) : customersView.length > 0 ? (
+                    customersView.map((customer) => (
                       <TableRow key={customer.id}>
                         <TableCell>{customer.email}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span>{customer.accessCode}</span>
-                            {customer.accessCode && customer.accessCode !== 'N/A' && (
+                            <span>{customer.accessCode || '...'}</span>
+                            {customer.accessCode && customer.accessCode !== 'N/A' && customer.accessCode !== 'Erro' && (
                                <Button
                                 variant="ghost"
                                 size="icon"
@@ -274,14 +288,14 @@ export default function AdminPage() {
                               customer.isUsed ? (
                                 <Badge variant="destructive">Utilizado</Badge>
                               ) : (
-                                <Badge className="bg-green-600">Disponível</Badge>
+                                <Badge className="bg-green-600 text-white">Disponível</Badge>
                               )
                           ) : (
-                            <Badge variant="secondary">N/A</Badge>
+                            <Badge variant="secondary">{customer.accessCode === 'Erro' ? 'Erro' : 'N/A'}</Badge>
                           )}
                         </TableCell>
                         <TableCell>
-                          {customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString('pt-BR') : 'Processando...'}
+                           {customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString('pt-BR') : 'Processando...'}
                         </TableCell>
                       </TableRow>
                     ))
