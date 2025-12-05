@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview Generates a statistically suggested number combination for the Mega da Virada draw.
+ * @fileOverview Generates a statistically suggested number combination for the Números da Virada draw.
  *
  * - generateStatisticallySuggestedNumbers - A function that generates a statistically suggested number combination.
  * - GenerateStatisticallySuggestedNumbersInput - The input type for the generateStatisticallySuggestedNumbers function.
@@ -42,7 +42,7 @@ const generateNumbersPrompt = ai.definePrompt({
   output: {schema: GenerateStatisticallySuggestedNumbersOutputSchema},
   prompt: `You are an expert lottery number generator.
 
-  Based on statistical analysis of past Mega da Virada draws, generate 1 unique combination of {{{numbersPerCombination}}} numbers between 1 and 60. Return the combination as a JSON array of arrays.
+  Based on statistical analysis of past Números da Virada draws, generate 1 unique combination of {{{numbersPerCombination}}} numbers between 1 and 60. Return the combination as a JSON array of arrays.
 
   The numbers in the combination should be sorted in ascending order.
   The combination must be an array of {{{numbersPerCombination}}} numbers. No duplicates allowed in the combination.

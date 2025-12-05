@@ -3,9 +3,9 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Mega Millions Maximizer',
+  title: 'Números da Virada',
   description:
-    'Gere combinações de dezenas estudadas e estatisticamente sugeridas para o sorteio da Mega da Virada.',
+    'Gere combinações de dezenas estudadas e estatisticamente sugeridas para o sorteio da Números da Virada.',
 };
 
 export default function RootLayout({
