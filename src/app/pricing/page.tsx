@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, Loader2, Info, Ticket } from "lucide-react";
@@ -38,6 +38,15 @@ export default function PricingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedNumbers, setGeneratedNumbers] = useState<GenerateNumbersOutput | null>(null);
+  
+  useEffect(() => {
+    if (isGenerating && generatedNumbers) {
+      const timer = setTimeout(() => {
+        router.push(`/results?numbers=${JSON.stringify(generatedNumbers.numberCombinations)}`);
+      }, 5500); // Same duration as the loader
+      return () => clearTimeout(timer);
+    }
+  }, [isGenerating, generatedNumbers, router]);
 
   const startGenerationProcess = async () => {
     if (accessCode.trim().toUpperCase() !== ACCESS_CODE) {
@@ -49,29 +58,22 @@ export default function PricingPage() {
       return;
     }
     
-    setIsLoading(true); // Desabilita o botão
+    setIsLoading(true);
     
     const result = await generateNumbersAction({
       numbersPerCombination: parseInt(numbersPerCombination, 10),
     });
 
-    setIsLoading(false); // Reabilita o botão se a geração falhar antes do loader
-
     if (result.success && result.data?.numberCombinations) {
       setGeneratedNumbers(result.data);
-      setIsGenerating(true); // Inicia a tela de progresso
+      setIsGenerating(true);
     } else {
       toast({
         variant: "destructive",
         title: "Erro ao gerar dezenas",
         description: result.error || "Ocorreu um erro. Tente novamente mais tarde.",
       });
-    }
-  };
-
-  const handleGenerationComplete = () => {
-    if (generatedNumbers) {
-      router.push(`/results?numbers=${JSON.stringify(generatedNumbers.numberCombinations)}`);
+      setIsLoading(false); 
     }
   };
   
@@ -79,7 +81,7 @@ export default function PricingPage() {
 
   return (
     <TooltipProvider>
-      {isGenerating && <GeneratingLoader onComplete={handleGenerationComplete} />}
+      {isGenerating && <GeneratingLoader />}
       <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--primary))] to-green-950 text-white p-4 sm:p-8">
         <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
           <ArrowLeft size={16} />

@@ -14,11 +14,7 @@ const loadingTexts = [
   "Finalizando e preparando seus números!",
 ];
 
-interface GeneratingLoaderProps {
-  onComplete: () => void;
-}
-
-export function GeneratingLoader({ onComplete }: GeneratingLoaderProps) {
+export function GeneratingLoader() {
   const [progress, setProgress] = useState(0);
   const [currentText, setCurrentText] = useState(loadingTexts[0]);
 
@@ -29,7 +25,7 @@ export function GeneratingLoader({ onComplete }: GeneratingLoaderProps) {
         const nextIndex = (currentIndex + 1) % loadingTexts.length;
         return loadingTexts[nextIndex];
       });
-    }, 1000); // Muda o texto a cada 1 segundo
+    }, 1000);
 
     const progressInterval = setInterval(() => {
       setProgress(prev => {
@@ -38,7 +34,7 @@ export function GeneratingLoader({ onComplete }: GeneratingLoaderProps) {
           clearInterval(textInterval);
           return 100;
         }
-        return prev + 4; // Aumenta 4% a cada 200ms para um total de 5s
+        return prev + 4;
       });
     }, 200);
 
@@ -47,15 +43,6 @@ export function GeneratingLoader({ onComplete }: GeneratingLoaderProps) {
       clearInterval(progressInterval);
     };
   }, []);
-
-  useEffect(() => {
-    if (progress >= 100) {
-      // Chame onComplete aqui para evitar o erro de renderização
-      const timer = setTimeout(() => onComplete(), 50); // Pequeno atraso para garantir que o estado seja atualizado
-      return () => clearTimeout(timer);
-    }
-  }, [progress, onComplete]);
-
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
