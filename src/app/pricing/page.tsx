@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Lock, Loader2, Info } from "lucide-react";
+import { ArrowLeft, CheckCircle, Lock, Loader2, Info, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +35,7 @@ export default function PricingPage() {
   const [accessCode, setAccessCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   
-  const handleLiberarAcesso = async () => {
+  const handleGenerateNumbers = async () => {
     if (accessCode.trim().toUpperCase() !== ACCESS_CODE) {
       toast({
         variant: "destructive",
@@ -90,6 +90,18 @@ export default function PricingPage() {
           </div>
 
           <div className="w-full space-y-6">
+            <Button
+              size="lg"
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl py-7 rounded-lg shadow-lg"
+              asChild
+            >
+              <Link href="#">LIBERAR ACESSO</Link>
+            </Button>
+            
+            <div className="text-center text-sm text-gray-300">
+              <p>Já tem um código? Insira abaixo para gerar.</p>
+            </div>
+
             <div>
               <Label htmlFor="combinations" className="text-left block mb-2 font-semibold">Quantas combinações deseja gerar?</Label>
               <p className="text-sm text-gray-300 mb-2 text-left">Cada combinação contém 6 números.</p>
@@ -133,11 +145,11 @@ export default function PricingPage() {
 
             <Button
               size="lg"
-              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl py-7 rounded-lg shadow-lg"
-              onClick={handleLiberarAcesso}
-              disabled={isLoading}
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg py-6 rounded-lg shadow-md"
+              onClick={handleGenerateNumbers}
+              disabled={isLoading || accessCode.trim().toUpperCase() !== ACCESS_CODE}
             >
-              {isLoading ? <Loader2 className="animate-spin" /> : "LIBERAR ACESSO"}
+              {isLoading ? <Loader2 className="animate-spin" /> : <><Ticket className="mr-2" /> GERAR NÚMEROS</>}
             </Button>
           </div>
 
