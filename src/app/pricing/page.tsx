@@ -69,7 +69,7 @@ export default function PricingPage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--primary))] to-green-800 text-foreground p-4 sm:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--primary))] to-green-800 text-white p-4 sm:p-8">
         <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
           <ArrowLeft size={16} />
           Voltar
@@ -93,7 +93,7 @@ export default function PricingPage() {
           <div className="w-full space-y-6 bg-white/90 p-6 rounded-lg shadow-xl">
             <Button
               size="lg"
-              className="animate-sheen w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xl py-7 rounded-lg shadow-lg"
+              className="animate-sheen w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl py-7 rounded-lg shadow-lg"
               asChild
             >
               <Link href="#">LIBERAR ACESSO</Link>
