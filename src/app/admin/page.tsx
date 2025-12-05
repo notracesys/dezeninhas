@@ -69,9 +69,10 @@ export default function AdminPage() {
   }, [user, isAdmin, isUserLoading, isAdminLoading, router]);
 
   const customersQuery = useMemoFirebase(() => {
-    if (!firestore || !isAdmin) return null; // Only query if user is an admin
+    // IMPORTANT: Only create the query if the user is a verified admin.
+    if (!firestore || !isAdmin) return null; 
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, isAdmin]);
+  }, [firestore, isAdmin]); // This now depends on `isAdmin`
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
 
@@ -100,7 +101,8 @@ export default function AdminPage() {
       }
     };
     
-    if (isAdmin) {
+    // Only fetch codes if we are an admin and have customers
+    if (isAdmin && customers) {
         fetchAccessCodes();
     }
   }, [customers, firestore, isAdmin]);
