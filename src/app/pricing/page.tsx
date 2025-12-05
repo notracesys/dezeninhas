@@ -67,7 +67,7 @@ export default function PricingPage() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-primary text-white p-4 sm:p-8">
+      <div className="min-h-screen bg-gradient-to-br from-green-900 to-green-800 text-white p-4 sm:p-8">
         <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-white hover:text-gray-200 transition-colors">
           <ArrowLeft size={16} />
           Voltar
@@ -79,7 +79,7 @@ export default function PricingPage() {
           </p>
           <p className="text-lg text-gray-300">Apenas uma única liberação por jogo.</p>
           
-          <div className="relative my-8 w-full max-w-sm transform -rotate-3">
+          <div className="relative my-8 w-full max-w-sm -rotate-3">
              <BlockedNumbersCard />
           </div>
           
