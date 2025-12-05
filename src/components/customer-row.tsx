@@ -29,18 +29,6 @@ interface CustomerRowProps {
   customer: WithId<CustomerDoc>;
 }
 
-// Function to safely convert Firestore Timestamps
-function formatTimestamp(timestamp: any): string {
-  if (timestamp && typeof timestamp.toDate === 'function') {
-    return timestamp.toDate().toLocaleDateString('pt-BR');
-  }
-  // Handle cases where it might be a plain object before server sync
-  if (timestamp && timestamp.seconds) {
-    return new Date(timestamp.seconds * 1000).toLocaleDateString('pt-BR');
-  }
-  return 'Processando...';
-}
-
 export function CustomerRow({ customer }: CustomerRowProps) {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -50,7 +38,7 @@ export function CustomerRow({ customer }: CustomerRowProps) {
 
   useEffect(() => {
     const fetchAccessCode = async () => {
-      setIsLoadingCode(true); // Reset loading state on each run
+      setIsLoadingCode(true);
       if (!firestore || !customer.accessCodeId) {
         setIsLoadingCode(false);
         return;
@@ -77,7 +65,7 @@ export function CustomerRow({ customer }: CustomerRowProps) {
     };
 
     fetchAccessCode();
-  }, [firestore, customer.id, customer.accessCodeId]); // Depend on customer.id to refetch if the customer object changes
+  }, [firestore, customer.id, customer.accessCodeId]);
 
   const copyToClipboard = (text: string) => {
     if (navigator.clipboard) {
@@ -125,9 +113,6 @@ export function CustomerRow({ customer }: CustomerRowProps) {
         ) : (
            <Badge variant="secondary">Erro</Badge>
         )}
-      </TableCell>
-      <TableCell>
-        {formatTimestamp(customer.createdAt)}
       </TableCell>
     </TableRow>
   );

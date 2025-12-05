@@ -184,13 +184,12 @@ export default function AdminPage() {
                     <TableHead>Email</TableHead>
                     <TableHead>Código de Acesso</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Data de Criação</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoadingCustomers ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">
+                      <TableCell colSpan={3} className="text-center">
                         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                       </TableCell>
                     </TableRow>
@@ -200,7 +199,7 @@ export default function AdminPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center">
+                      <TableCell colSpan={3} className="text-center">
                         Nenhum cliente encontrado.
                       </TableCell>
                     </TableRow>
