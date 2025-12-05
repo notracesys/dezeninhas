@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Lock, Loader2, Info, Ticket } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, Info, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -127,7 +127,7 @@ export default function PricingPage() {
                     <Info size={16} className="text-gray-300 cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs bg-gray-800 text-white border-gray-700">
-                    <p>Você receberá um código de acesso após o pagamento. Para fins de demonstração, use o código: <strong className="text-accent">MEGA2024</strong></p>
+                    <p>Você receberá seu código de acesso por e-mail após a confirmação do pagamento. Para fins de demonstração, use o código: <strong className="text-accent">MEGA2024</strong></p>
                   </TooltipContent>
                 </Tooltip>
               </div>
