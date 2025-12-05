@@ -34,6 +34,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy, LogOut } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
+import { useDoc } from '@/firebase/firestore/use-doc';
 
 interface Customer {
   id: string;
@@ -43,34 +44,60 @@ interface Customer {
   accessCode?: string;
 }
 
+// Custom hook to check admin status
+function useAdminStatus() {
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const adminDocRef = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return doc(firestore, 'roles_admin', user.uid);
+  }, [user, firestore]);
+
+  const { data: adminDoc, isLoading: isAdminLoading } = useDoc(adminDocRef);
+
+  const isAdmin = adminDoc ? adminDoc.id === user?.uid : false;
+  const isLoading = isUserLoading || (user && isAdminLoading);
+
+  return { isAdmin, isLoading };
+}
+
+
 export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user, isUserLoading, auth } = useUser();
+  const { isAdmin, isLoading: isAdminLoading } = useAdminStatus();
   const firestore = useFirestore();
 
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
-  // Effect to handle redirection based on auth status
+  // Effect to handle redirection based on auth status and admin role
   useEffect(() => {
-    // Wait until user status is determined
-    if (isUserLoading) {
-      return;
+    const isCheckingPermissions = isUserLoading || isAdminLoading;
+    if (isCheckingPermissions) {
+      return; // Wait until all checks are complete
     }
 
-    // If not logged in, redirect to login
     if (!user) {
-      router.push('/login');
+      router.push('/login'); // Not logged in
+    } else if (!isAdmin) {
+       toast({
+        variant: 'destructive',
+        title: 'Acesso Negado',
+        description: 'Você não tem permissão para acessar esta página.',
+      });
+      router.push('/login'); // Logged in but not an admin
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, isAdmin, isAdminLoading, router, toast]);
 
   const customersQuery = useMemoFirebase(() => {
-    // IMPORTANT: Only create the query if the user is logged in.
-    if (!firestore || !user) return null; 
+    // IMPORTANT: Only create the query if the user is an admin.
+    if (!firestore || !isAdmin) return null; 
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, user]);
+  }, [firestore, isAdmin]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
 
@@ -99,11 +126,11 @@ export default function AdminPage() {
       }
     };
     
-    // Only fetch codes if we are logged in and have customers
-    if (user && customers) {
+    // Only fetch codes if we are an admin and have customers
+    if (isAdmin && customers) {
         fetchAccessCodes();
     }
-  }, [customers, firestore, user]);
+  }, [customers, firestore, isAdmin]);
 
   const handleLogout = async () => {
     if (auth) {
@@ -171,11 +198,21 @@ export default function AdminPage() {
     });
   };
 
-  // Display a loading spinner while checking auth status
-  if (isUserLoading || !user) {
+  // Display a loading spinner while checking auth status or admin role
+  if (isUserLoading || isAdminLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // If the user is definitely not an admin, they will be redirected by the effect.
+  // This avoids rendering the page content for non-admins.
+  if (!isAdmin) {
+    return (
+       <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <p>Redirecionando...</p>
       </div>
     );
   }
