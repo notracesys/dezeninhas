@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth, useFirestore, useUser, useMemoFirebase } from '@/firebase';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 import {
   collection,
   addDoc,
@@ -32,10 +31,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Copy, LogOut } from 'lucide-react';
-import { signOut } from 'firebase/auth';
+import { Loader2, Copy } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { useAdminStatus } from '@/hooks/useAdminStatus';
 
 interface Customer {
   id: string;
@@ -45,41 +42,24 @@ interface Customer {
   accessCode?: string;
 }
 
-export default function AdminPage() {
-  const router = useRouter();
-  const auth = useAuth();
+export default function AdminSecretPage() {
   const firestore = useFirestore();
-  const { user, isUserLoading } = useUser();
-  const { isAdmin, isAdminLoading } = useAdminStatus();
   const { toast } = useToast();
 
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [pageState, setPageState] = useState<'loading' | 'redirecting' | 'loaded'>('loading');
   
   const customersQuery = useMemoFirebase(() => {
-    if (pageState !== 'loaded' || !firestore || !isAdmin) return null;
+    if (!firestore) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, isAdmin, pageState]);
+  }, [firestore]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
   useEffect(() => {
-    const isAuthCheckComplete = !isUserLoading && !isAdminLoading;
-    if (isAuthCheckComplete) {
-      if (user && isAdmin) {
-        setPageState('loaded');
-      } else {
-        setPageState('redirecting');
-        router.push('/login');
-      }
-    }
-  }, [user, isUserLoading, isAdmin, isAdminLoading, router]);
-
-  useEffect(() => {
     const fetchAccessCodes = async () => {
-      if (pageState === 'loaded' && customers && firestore) {
+      if (customers && firestore) {
         const customersData = await Promise.all(
           customers.map(async (customer) => {
             if (!customer.accessCodeId) {
@@ -102,7 +82,7 @@ export default function AdminPage() {
       }
     };
     fetchAccessCodes();
-  }, [customers, firestore, pageState]);
+  }, [customers, firestore]);
 
   const generateAccessCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -162,29 +142,11 @@ export default function AdminPage() {
     });
   };
 
-  const handleLogout = async () => {
-    if(!auth) return;
-    await signOut(auth);
-    router.push('/login');
-  };
-
-  if (pageState !== 'loaded') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <main className="min-h-screen bg-gray-100 p-4 md:p-8">
       <div className="mx-auto max-w-4xl">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Painel do Administrador</h1>
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
-            <LogOut className="mr-2 h-4 w-4" />
-            Sair
-          </Button>
+          <h1 className="text-3xl font-bold">Painel de Administração Secreto</h1>
         </div>
 
         <Card className="mb-8">

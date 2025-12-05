@@ -2,42 +2,32 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper Functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/roles_admin/$(request.auth.uid)).data.isAdmin == true;
-    }
-
     match /customers/{customerId} {
-      // Only admins can read, list, create, or delete customer records.
-      allow read, list, create, delete: if isAdmin();
-      // No updates allowed by clients to prevent tampering.
-      allow update: if false;
+      // Anyone can create, read, and list customers for the admin panel.
+      // Security is handled by the secret URL.
+      allow read, list, create: if true;
+      // No updates or deletes allowed from the client.
+      allow update, delete: if false;
     }
 
     match /access_codes/{accessCodeId} {
-      // Admins can manage the entire lifecycle of access codes.
-      allow read, list, create, delete: if isAdmin();
+      // Anyone can create codes (via the admin panel).
+      allow create: if true;
       
-      // A user (authenticated or anonymous) can update a code ONLY to mark it as used.
+      // Anyone can read a code to validate it.
+      allow read, list: if true;
+      
+      // A user can update a code ONLY to mark it as used.
       // This is the core of the single-use logic.
       // 1. The code must not have been used before (isUsed is false).
       // 2. The update can only change isUsed to true.
-      // 3. No other fields can be changed.
+      // 3. No other fields can be changed except for usedAt.
       allow update: if request.resource.data.isUsed == true &&
                        resource.data.isUsed == false &&
-                       request.resource.data.keys().hasOnly(['isUsed', 'usedAt']);
-    }
-    
-    match /roles_admin/{userId} {
-      // Admins can see who other admins are.
-      allow get, list: if isAdmin();
-      // Role management is locked down from the client to prevent privilege escalation.
-      // Roles must be assigned via the Firebase Console.
-      allow create, update, delete: if false;
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isUsed', 'usedAt']);
+                       
+      // Deletes are disallowed from client.
+      allow delete: if false;
     }
   }
 }

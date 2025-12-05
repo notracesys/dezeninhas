@@ -60,11 +60,6 @@
       ]
     }
   },
-  "auth": {
-    "providers": [
-      "password"
-    ]
-  },
   "firestore": {
     "/customers/{customerId}": {
       "schema": {
@@ -77,17 +72,6 @@
         "$ref": "#/entities/AccessCode"
       },
       "description": "Stores single-use access codes. The 'isUsed' field tracks redemption status."
-    },
-    "/roles_admin/{userId}": {
-      "schema": {
-        "type": "object",
-        "properties": {
-          "isAdmin": {
-            "type": "boolean"
-          }
-        }
-      },
-      "description": "Grants admin role to a user. The existence of a document with isAdmin:true grants privileges."
     }
   }
 }
