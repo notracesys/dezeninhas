@@ -2,8 +2,7 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permite acesso total (leitura, escrita e listagem) a qualquer usuário que esteja logado.
-    // Esta é uma regra permissiva para desenvolvimento.
+    // Allows any authenticated user to read, write, and list any document.
     match /{document=**} {
       allow read, write, list: if request.auth != null;
     }
