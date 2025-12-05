@@ -31,8 +31,8 @@ export default function Home() {
       </div>
       <footer className="w-full bg-white p-4 pb-8">
         <div className="mx-auto max-w-3xl text-center text-slate-500">
-          <h3 className="font-bold text-sm mb-2">Aviso Importante</h3>
-          <p className="text-xs">
+          <h3 className="font-bold text-xs mb-1">Aviso Importante</h3>
+          <p className="text-[11px]">
             Os números que você obterá em nosso sistema não são uma garantia de
             premiação. Eles são sugestões geradas com base em resoluções
             matemáticas, raciocínio lógico e um profundo estudo estatístico sobre
