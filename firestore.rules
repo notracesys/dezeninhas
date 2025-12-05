@@ -3,22 +3,22 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Função para verificar se o usuário é um administrador
+    // Função para verificar se o usuário está autenticado.
+    // Qualquer usuário logado agora tem permissão de administrador.
     function isAdmin() {
-      return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/roles_admin/$(request.auth.uid)).data.isAdmin == true;
+      return request.auth != null;
     }
 
     // Regras para a coleção de administradores
     match /roles_admin/{userId} {
       // Ninguém pode criar ou modificar roles a partir do cliente para segurança.
-      // Isso deve ser feito manualmente no console do Firebase.
+      // Isso deve ser feito manualmente no console do Firebase se necessário no futuro.
       allow read, write: if false;
     }
 
     // Regras para a coleção de clientes
     match /customers/{customerId} {
-      // Apenas administradores podem ler e criar clientes.
+      // Apenas administradores (qualquer usuário logado) podem ler e criar clientes.
       allow read, list, create: if isAdmin();
       // Ninguém pode atualizar ou deletar clientes pelo cliente.
       allow update, delete: if false;
@@ -26,11 +26,11 @@ service cloud.firestore {
 
     // Regras para a coleção de códigos de acesso
     match /access_codes/{accessCodeId} {
-      // Apenas administradores podem criar novos códigos.
+      // Apenas administradores (qualquer usuário logado) podem criar novos códigos.
       allow create: if isAdmin();
       
-      // Qualquer pessoa pode ler um código para validar.
-      // Isso é necessário na página de pricing/geração.
+      // A leitura é permitida para administradores para gerenciamento e
+      // para qualquer pessoa validar o código na página de geração.
       allow read, list: if true;
       
       // A atualização só é permitida para marcar um código como usado.
