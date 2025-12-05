@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { generateNumbersAction } from "@/app/actions";
+import { generateNumbersAction, type GenerateNumbersOutput } from "@/app/actions";
 import {
   Tooltip,
   TooltipContent,
@@ -23,6 +23,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { BlockedNumbersCard } from "@/components/blocked-numbers-card";
+import { GeneratingLoader } from "@/components/generating-loader";
+
 
 // Este código de acesso é apenas para fins de demonstração.
 // Em um aplicativo real, a validação seria feita no backend após um pagamento bem-sucedido.
@@ -34,8 +36,10 @@ export default function PricingPage() {
   const [numbersPerCombination, setNumbersPerCombination] = useState("6");
   const [accessCode, setAccessCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  
-  const handleGenerateNumbers = async () => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedNumbers, setGeneratedNumbers] = useState<GenerateNumbersOutput | null>(null);
+
+  const startGenerationProcess = async () => {
     if (accessCode.trim().toUpperCase() !== ACCESS_CODE) {
       toast({
         variant: "destructive",
@@ -45,17 +49,17 @@ export default function PricingPage() {
       return;
     }
     
-    setIsLoading(true);
+    setIsLoading(true); // Desabilita o botão
     
     const result = await generateNumbersAction({
       numbersPerCombination: parseInt(numbersPerCombination, 10),
     });
 
-    setIsLoading(false);
+    setIsLoading(false); // Reabilita o botão se a geração falhar antes do loader
 
     if (result.success && result.data?.numberCombinations) {
-      // Passa os números gerados como um parâmetro de busca para a página de resultados.
-      router.push(`/results?numbers=${JSON.stringify(result.data.numberCombinations)}`);
+      setGeneratedNumbers(result.data);
+      setIsGenerating(true); // Inicia a tela de progresso
     } else {
       toast({
         variant: "destructive",
@@ -64,11 +68,18 @@ export default function PricingPage() {
       });
     }
   };
+
+  const handleGenerationComplete = () => {
+    if (generatedNumbers) {
+      router.push(`/results?numbers=${JSON.stringify(generatedNumbers.numberCombinations)}`);
+    }
+  };
   
   const isButtonDisabled = isLoading || accessCode.trim().toUpperCase() !== ACCESS_CODE.toUpperCase();
 
   return (
     <TooltipProvider>
+      {isGenerating && <GeneratingLoader onComplete={handleGenerationComplete} />}
       <div className="min-h-screen bg-gradient-to-br from-[hsl(var(--primary))] to-green-950 text-white p-4 sm:p-8">
         <Link href="/" className="absolute top-4 left-4 flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors">
           <ArrowLeft size={16} />
@@ -148,7 +159,7 @@ export default function PricingPage() {
             <Button
               size="lg"
               className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg py-6 rounded-lg shadow-md"
-              onClick={handleGenerateNumbers}
+              onClick={startGenerationProcess}
               disabled={isButtonDisabled}
             >
               {isLoading ? <Loader2 className="animate-spin" /> : <><Ticket className="mr-2" /> GERAR DEZENAS</>}
