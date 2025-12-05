@@ -35,7 +35,7 @@ export default function Home() {
           </Button>
         </main>
       </div>
-      <footer className="relative z-10 w-full bg-white p-4 pb-8">
+      <footer className="relative z-10 w-full p-4 pb-8">
         <div className="mx-auto max-w-3xl text-center text-slate-500">
           <h3 className="font-bold text-xs mb-1">Aviso Importante</h3>
           <p className="text-[10px]">
