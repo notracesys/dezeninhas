@@ -17,10 +17,10 @@ export default function Home() {
             height={100}
             className="mx-auto"
           />
-          <h1 className="font-headline animate-sheen mt-4 py-2 text-5xl font-extrabold uppercase tracking-wider text-accent md:text-7xl">
+          <h1 className="font-headline animate-sheen mt-4 py-2 text-5xl font-extrabold uppercase tracking-wider text-primary md:text-7xl">
             Números da Virada
           </h1>
-          <h2 className="mt-2 text-xl font-semibold text-accent/80 md:text-2xl">
+          <h2 className="mt-2 text-xl font-semibold text-primary/80 md:text-2xl">
             Aumente Suas Chances
           </h2>
           <p className="mt-6 max-w-lg text-lg text-slate-600">
