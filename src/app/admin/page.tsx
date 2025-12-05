@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import {
@@ -44,7 +44,7 @@ export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
-
+  
   // Simple, robust authentication check.
   useEffect(() => {
     if (sessionStorage.getItem(AUTH_KEY) !== 'true') {
@@ -122,7 +122,7 @@ export default function AdminPage() {
       setIsCreatingCustomer(false);
     }
   };
-
+  
   if (isAuthenticated === null) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
