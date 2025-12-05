@@ -5,7 +5,8 @@ import Image from 'next/image';
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-white">
+    <div className="relative min-h-screen w-full overflow-hidden bg-background">
+      <div className="absolute inset-0 z-0 h-full w-full bg-white"></div>
       <BackgroundDecorations />
       <div className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center p-4 text-center">
         <main>
@@ -29,7 +30,7 @@ export default function Home() {
           <Button
             asChild
             size="sm"
-            className="animate-sheen mt-8 transform rounded-lg bg-primary px-6 py-3 text-base font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90"
+            className="animate-sheen mt-8 transform rounded-lg bg-accent px-6 py-3 text-base font-bold text-accent-foreground shadow-lg transition-transform hover:scale-105 hover:bg-accent/90"
           >
             <Link href="/pricing">QUERO GERAR MINHAS DEZENAS</Link>
           </Button>
