@@ -172,8 +172,20 @@ export default function AdminPage() {
   };
 
   // Display a loading spinner while checking auth/admin status
-  if (isUserLoading || isAdminLoading || !isAdmin || !user) {
+  if (isUserLoading || isAdminLoading) {
     return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // After loading, if there's still no user or admin status, the useEffect will handle redirection.
+  // We only render the admin panel if the user is verified as an admin.
+  if (!user || !isAdmin) {
+    // This also renders a loader, which prevents a flash of the login page
+    // while the redirection is in flight.
+     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
