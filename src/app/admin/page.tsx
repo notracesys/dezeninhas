@@ -102,7 +102,10 @@ export default function AdminPage() {
       if (!firestore || !customer.accessCodeId) {
         setCustomersView(prev => {
             const newState = [...prev];
-            newState[index].accessCode = 'error';
+            const customerIndexToUpdate = newState.findIndex(c => c.id === customer.id);
+            if (customerIndexToUpdate !== -1) {
+              newState[customerIndexToUpdate].accessCode = 'error';
+            }
             return newState;
         });
         return;
@@ -120,10 +123,10 @@ export default function AdminPage() {
         setCustomersView(prev => {
             const newState = [...prev];
             // Find the correct customer to update, in case the order has changed
-            const customerIndex = newState.findIndex(c => c.id === customer.id);
-            if (customerIndex !== -1) {
-                newState[customerIndex].accessCode = codeData.code || 'error';
-                newState[customerIndex].isUsed = codeData.isUsed;
+            const customerIndexToUpdate = newState.findIndex(c => c.id === customer.id);
+            if (customerIndexToUpdate !== -1) {
+                newState[customerIndexToUpdate].accessCode = codeData.code || 'error';
+                newState[customerIndexToUpdate].isUsed = codeData.isUsed;
             }
             return newState;
         });
@@ -131,9 +134,9 @@ export default function AdminPage() {
         console.error(`Failed to fetch access code for customer ${customer.id}`, error);
         setCustomersView(prev => {
             const newState = [...prev];
-            const customerIndex = newState.findIndex(c => c.id === customer.id);
-            if (customerIndex !== -1) {
-                newState[customerIndex].accessCode = 'error';
+            const customerIndexToUpdate = newState.findIndex(c => c.id === customer.id);
+            if (customerIndexToUpdate !== -1) {
+                newState[customerIndexToUpdate].accessCode = 'error';
             }
             return newState;
         });
@@ -314,7 +317,7 @@ export default function AdminPage() {
                               )
                           ) : (
                             <Badge variant="secondary">
-                                {customer.accessCode === 'error' ? 'Erro' : <Loader2 className="h-3 w-3 animate-spin" />}
+                                {customer.accessCode === 'error' ? 'Erro' : '...'}
                             </Badge>
                           )}
                         </TableCell>
@@ -339,5 +342,3 @@ export default function AdminPage() {
     </main>
   );
 }
-
-    
