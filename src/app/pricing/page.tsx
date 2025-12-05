@@ -90,12 +90,9 @@ export default function PricingPage() {
                 width={600}
                 height={350}
                 data-ai-hint={lotteryTicketImage.imageHint}
-                className="rounded-xl shadow-2xl blur-sm"
+                className="rounded-xl shadow-2xl"
               />
             )}
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 rounded-xl">
-              <Lock size={64} className="text-white/50" />
-            </div>
           </div>
           
           <div className="flex flex-col items-center space-y-2 mb-8">

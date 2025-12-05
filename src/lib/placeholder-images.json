@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "lottery-ticket",
-      "description": "A blurred lottery ticket.",
-      "imageUrl": "https://images.unsplash.com/photo-1762073724573-fe3835529ab5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxsb3R0ZXJ5JTIwdGlja2V0fGVufDB8fHx8MTc2NDc5NDYzMHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "lottery ticket"
+      "description": "A lottery ticket with padlocks over the numbers.",
+      "imageUrl": "https://images.unsplash.com/photo-1583521226253-921b3924843e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxsb3R0ZXJ5JTIwcGFkbG9ja3xlbnwwfHx8fDE3MTc2MTg0OTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "lottery padlock"
     }
   ]
 }
