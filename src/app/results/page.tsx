@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ticket, Clover } from "lucide-react";
+import { Clover } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function LotteryCard({ combination, index }: { combination: number[], index: number }) {
@@ -13,13 +13,7 @@ function LotteryCard({ combination, index }: { combination: number[], index: num
 
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden transform transition-transform hover:scale-105">
-      <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-            <Clover className="w-6 h-6 opacity-80" />
-            <h3 className="font-bold text-lg">
-                Combinação #{index + 1}
-            </h3>
-        </div>
+      <div className="bg-primary text-primary-foreground p-3 flex justify-end items-center">
         <span className="font-headline text-xl">Números da Virada</span>
       </div>
       <div className="p-4 grid grid-cols-10 gap-1.5 md:gap-2">
