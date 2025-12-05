@@ -1,11 +1,11 @@
 "use client";
 
-import { Clover, DollarSign } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { useEffect, useState } from "react";
 
 interface Decoration {
   id: number;
-  Component: typeof Clover | typeof DollarSign;
+  Component: typeof DollarSign;
   style: React.CSSProperties;
 }
 
@@ -18,7 +18,7 @@ export function BackgroundDecorations() {
       const numDecorations = 20;
 
       for (let i = 0; i < numDecorations; i++) {
-        const component = Math.random() > 0.5 ? Clover : DollarSign;
+        const component = DollarSign;
         const size = Math.random() * 40 + 20;
         const duration = Math.random() * 20 + 15;
         const delay = Math.random() * -duration;
