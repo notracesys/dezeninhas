@@ -46,6 +46,7 @@ const generateNumbersPrompt = ai.definePrompt({
 
   The numbers in the combination should be sorted in ascending order.
   The combination must be an array of {{{numbersPerCombination}}} numbers. No duplicates allowed in the combination.
+  The result must be an array containing a single array of numbers.
   `,
 });
 
