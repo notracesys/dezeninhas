@@ -106,7 +106,7 @@ export default function PricingPage() {
           <div className="w-full space-y-6 bg-white/90 p-6 rounded-lg shadow-xl">
             <Button
               size="lg"
-              className="animate-sheen w-full bg-accent text-accent-foreground hover:bg-accent/90 font-bold text-xl py-7 rounded-lg shadow-lg"
+              className="animate-sheen w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xl py-7 rounded-lg shadow-lg"
               asChild
             >
               <Link href="https://pay.kirvano.com/415dda1a-220b-4514-983c-c51283359309">LIBERAR ACESSO</Link>
