@@ -74,7 +74,7 @@ export default function PricingPage() {
         </Link>
         <div className="max-w-md mx-auto flex flex-col items-center text-center">
           <h1 className="text-3xl sm:text-5xl font-bold mt-12">Acesso aos Números da Virada</h1>
-          <p className="text-5xl sm:text-7xl font-bold text-accent my-4">
+          <p className="text-5xl sm:text-7xl font-bold text-yellow-300 my-4">
             R$ 14,90
           </p>
           <p className="text-lg text-gray-300">Apenas uma única liberação por jogo.</p>
@@ -127,7 +127,7 @@ export default function PricingPage() {
                     <Info size={16} className="text-gray-300 cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs bg-gray-800 text-white border-gray-700">
-                    <p>Você receberá seu código de acesso por e-mail após a confirmação do pagamento. Para fins de demonstração, use o código: <strong className="text-accent">MEGA2024</strong></p>
+                    <p>Você receberá seu código de acesso por e-mail após a confirmação do pagamento. Para fins de demonstração, use o código: <strong className="text-yellow-300">MEGA2024</strong></p>
                   </TooltipContent>
                 </Tooltip>
               </div>
@@ -155,15 +155,15 @@ export default function PricingPage() {
 
           <div className="mt-8 space-y-3 text-left w-full">
             <div className="flex items-center gap-3">
-              <CheckCircle className="text-accent h-5 w-5 shrink-0" />
+              <CheckCircle className="text-yellow-300 h-5 w-5 shrink-0" />
               <p>Resultados gerados por especialistas</p>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle className="text-accent h-5 w-5 shrink-0" />
+              <CheckCircle className="text-yellow-300 h-5 w-5 shrink-0" />
               <p>Números exclusivos que não aparecem gratuitamente</p>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle className="text-accent h-5 w-5 shrink-0" />
+              <CheckCircle className="text-yellow-300 h-5 w-5 shrink-0" />
               <p>Libere o acesso imediato</p>
             </div>
           </div>
