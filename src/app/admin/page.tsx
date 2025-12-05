@@ -86,35 +86,39 @@ export default function AdminPage() {
 
   useEffect(() => {
     const processCustomers = async () => {
+      setIsViewLoading(true);
       if (!customers || !firestore) {
         if (!isLoadingCustomers) {
            setIsViewLoading(false);
         }
         return;
       }
-      
-      setIsViewLoading(true);
 
       const viewData = await Promise.all(
         customers.map(async (customer) => {
+          let codeData: Partial<AccessCodeDoc> & { id: string } = { id: customer.accessCodeId };
           try {
-            const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
-            const codeSnap = await getDoc(codeRef);
-            if (codeSnap.exists()) {
-              const codeData = codeSnap.data() as AccessCodeDoc;
-              return {
-                ...customer,
-                accessCode: codeData.code,
-                isUsed: codeData.isUsed,
-              };
+            if (customer.accessCodeId) {
+              const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
+              const codeSnap = await getDoc(codeRef);
+              if (codeSnap.exists()) {
+                codeData = { ...codeSnap.data() as AccessCodeDoc, id: codeSnap.id };
+              }
             }
           } catch (error) {
             console.error(`Failed to fetch access code for customer ${customer.id}`, error);
-            // Return customer data even if code fetch fails
-            return { ...customer, accessCode: 'Erro', isUsed: undefined };
+            return { 
+                ...customer, 
+                accessCode: 'Erro ao carregar',
+                isUsed: undefined
+             };
           }
-          // Return customer if code doesn't exist for some reason
-          return { ...customer, accessCode: 'N/A', isUsed: undefined };
+
+          return {
+            ...customer,
+            accessCode: codeData?.code,
+            isUsed: codeData?.isUsed,
+          };
         })
       );
       
@@ -231,7 +235,7 @@ export default function AdminPage() {
                 className="flex-grow"
                 disabled={isCreatingCustomer}
               />
-              <Button type="submit" disabled={isCreatingCustomer}>
+              <Button type="submit" disabled={isCreatingCustomer || !email.trim()}>
                 {isCreatingCustomer ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -270,8 +274,8 @@ export default function AdminPage() {
                         <TableCell>{customer.email}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <span>{customer.accessCode || '...'}</span>
-                            {customer.accessCode && customer.accessCode !== 'N/A' && customer.accessCode !== 'Erro' && (
+                            <span>{customer.accessCode || 'Processando...'}</span>
+                            {customer.accessCode && customer.accessCode !== 'Processando...' && customer.accessCode !== 'Erro ao carregar' && (
                                <Button
                                 variant="ghost"
                                 size="icon"
@@ -291,11 +295,11 @@ export default function AdminPage() {
                                 <Badge className="bg-green-600 text-white">Disponível</Badge>
                               )
                           ) : (
-                            <Badge variant="secondary">{customer.accessCode === 'Erro' ? 'Erro' : 'N/A'}</Badge>
+                            <Badge variant="secondary">{customer.accessCode === 'Erro ao carregar' ? 'Erro' : 'Processando...'}</Badge>
                           )}
                         </TableCell>
                         <TableCell>
-                           {customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString('pt-BR') : '...'}
+                           {customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString('pt-BR') : 'Processando...'}
                         </TableCell>
                       </TableRow>
                     ))
