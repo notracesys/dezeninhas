@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/firebase/provider';
-import { useAdminStatus } from '@/hooks/useAdminStatus';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import {
   collection,
@@ -48,31 +47,30 @@ export default function AdminPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user, isUserLoading, auth } = useUser();
-  const { isAdmin, isAdminLoading } = useAdminStatus(user);
   const firestore = useFirestore();
 
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
-  // Effect to handle redirection based on auth and admin status
+  // Effect to handle redirection based on auth status
   useEffect(() => {
-    // Wait until both user and admin status are determined
-    if (isUserLoading || isAdminLoading) {
+    // Wait until user status is determined
+    if (isUserLoading) {
       return;
     }
 
-    // If not logged in or not an admin, redirect to login
-    if (!user || !isAdmin) {
+    // If not logged in, redirect to login
+    if (!user) {
       router.push('/login');
     }
-  }, [user, isAdmin, isUserLoading, isAdminLoading, router]);
+  }, [user, isUserLoading, router]);
 
   const customersQuery = useMemoFirebase(() => {
-    // IMPORTANT: Only create the query if the user is a verified admin.
-    if (!firestore || !isAdmin) return null; 
+    // IMPORTANT: Only create the query if the user is logged in.
+    if (!firestore || !user) return null; 
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, isAdmin]); // This now depends on `isAdmin`
+  }, [firestore, user]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
 
@@ -101,11 +99,11 @@ export default function AdminPage() {
       }
     };
     
-    // Only fetch codes if we are an admin and have customers
-    if (isAdmin && customers) {
+    // Only fetch codes if we are logged in and have customers
+    if (user && customers) {
         fetchAccessCodes();
     }
-  }, [customers, firestore, isAdmin]);
+  }, [customers, firestore, user]);
 
   const handleLogout = async () => {
     if (auth) {
@@ -173,21 +171,9 @@ export default function AdminPage() {
     });
   };
 
-  // Display a loading spinner while checking auth/admin status
-  if (isUserLoading || isAdminLoading) {
+  // Display a loading spinner while checking auth status
+  if (isUserLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // After loading, if there's still no user or admin status, the useEffect will handle redirection.
-  // We only render the admin panel if the user is verified as an admin.
-  if (!user || !isAdmin) {
-    // This also renders a loader, which prevents a flash of the login page
-    // while the redirection is in flight.
-     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
