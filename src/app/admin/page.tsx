@@ -57,6 +57,7 @@ export default function AdminPage() {
   const [isLoading, setIsLoading] = useState(false);
   
   const customersQuery = useMemoFirebase(() => {
+    // This query will only run when firestore, user, and isAdmin are all truthy.
     if (!firestore || !user || !isAdmin) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
   }, [firestore, user, isAdmin]);
@@ -67,6 +68,7 @@ export default function AdminPage() {
   useEffect(() => {
     const isAuthCheckComplete = !isUserLoading && !isAdminLoading;
   
+    // Redirect logic: only runs when all loading is done.
     if (isAuthCheckComplete) {
       if (!user || !isAdmin) {
         router.push('/login');
@@ -76,7 +78,8 @@ export default function AdminPage() {
 
   useEffect(() => {
     const fetchAccessCodes = async () => {
-      if (customers && firestore) {
+      // Data fetching logic: runs only when we have customers and isAdmin is confirmed.
+      if (customers && firestore && isAdmin) {
         const customersData = await Promise.all(
           customers.map(async (customer) => {
             if (!customer.accessCodeId) {
@@ -97,7 +100,7 @@ export default function AdminPage() {
       }
     };
     fetchAccessCodes();
-  }, [customers, firestore]);
+  }, [customers, firestore, isAdmin]); // Depend on isAdmin to re-trigger if needed
 
   const generateAccessCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -167,8 +170,19 @@ export default function AdminPage() {
     router.push('/login');
   };
 
-  if (isUserLoading || isAdminLoading || !user || !isAdmin) {
+  // Loading state covers user loading and admin status checking.
+  if (isUserLoading || isAdminLoading) {
     return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-100">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  // This will only be rendered after loading is complete and we've confirmed the user is an admin.
+  // If not an admin, the useEffect above will have already triggered a redirect.
+  if (!user || !isAdmin) {
+      return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
