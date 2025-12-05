@@ -5,8 +5,45 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ticket } from "lucide-react";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Ticket, Clover } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+function LotteryCard({ combination, index }: { combination: number[], index: number }) {
+  const allNumbers = Array.from({ length: 60 }, (_, i) => i + 1);
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden transform transition-transform hover:scale-105">
+      <div className="bg-primary text-primary-foreground p-3 flex justify-between items-center">
+        <div className="flex items-center gap-2">
+            <Clover className="w-6 h-6 opacity-80" />
+            <h3 className="font-bold text-lg">
+                Combinação #{index + 1}
+            </h3>
+        </div>
+        <span className="font-headline text-xl">Números da Virada</span>
+      </div>
+      <div className="p-4 grid grid-cols-10 gap-1.5 md:gap-2">
+        {allNumbers.map((number) => {
+          const isSelected = combination.includes(number);
+          return (
+            <div
+              key={number}
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-full border-2 text-xs font-bold transition-all",
+                isSelected
+                  ? "bg-primary border-primary text-primary-foreground shadow-md"
+                  : "bg-gray-100 border-gray-300 text-gray-400"
+              )}
+            >
+              {String(number).padStart(2, '0')}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 
 function ResultsDisplay() {
   const searchParams = useSearchParams();
@@ -34,39 +71,22 @@ function ResultsDisplay() {
   }
 
   return (
-    <Card className="w-full max-w-4xl shadow-2xl">
+    <Card className="w-full max-w-5xl shadow-2xl bg-slate-50/80 backdrop-blur-sm">
       <CardHeader className="text-center">
-        <div className="mx-auto bg-primary text-primary-foreground rounded-full p-3 w-fit mb-4">
+        <div className="mx-auto bg-primary text-primary-foreground rounded-full p-3 w-fit mb-4 shadow-lg">
             <Ticket size={40} />
         </div>
         <CardTitle className="text-3xl font-bold text-primary">Suas Dezenas da Sorte!</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-center text-muted-foreground mb-8">Aqui estão suas combinações geradas por especialistas. Boa sorte!</p>
-        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           {combinations.map((combo, index) => (
-            <div key={index} className="bg-secondary/50 rounded-lg p-4 text-center border">
-              <h3 className="font-semibold text-lg text-secondary-foreground mb-3">
-                Combinação #{index + 1}
-              </h3>
-              <ScrollArea className="w-full whitespace-nowrap rounded-md">
-                <div className="flex w-max space-x-2 p-2 justify-center">
-                  {combo.map((num) => (
-                    <div
-                      key={num}
-                      className="flex items-center justify-center h-10 w-10 flex-shrink-0 bg-primary text-primary-foreground rounded-full font-bold text-base shadow-md"
-                    >
-                      {String(num).padStart(2, '0')}
-                    </div>
-                  ))}
-                </div>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
-            </div>
+             <LotteryCard key={index} combination={combo} index={index} />
           ))}
         </div>
-        <div className="text-center mt-10">
-          <Button asChild>
+        <div className="text-center mt-12">
+          <Button asChild size="lg">
             <Link href="/">Voltar para o Início</Link>
           </Button>
         </div>
@@ -77,7 +97,7 @@ function ResultsDisplay() {
 
 export default function ResultsPage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background p-4 md:p-8">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-100 p-4 md:p-8">
       <Suspense fallback={<div className="text-center">Carregando resultados...</div>}>
         <ResultsDisplay />
       </Suspense>
