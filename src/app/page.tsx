@@ -16,7 +16,7 @@ export default function Home() {
             height={100}
             className="mx-auto"
           />
-          <h1 className="font-headline mt-4 text-5xl font-extrabold uppercase tracking-wider text-primary md:text-7xl">
+          <h1 className="font-headline animate-sheen mt-4 text-5xl font-extrabold uppercase tracking-wider text-primary md:text-7xl">
             Mega da Virada
           </h1>
           <h2 className="mt-2 text-xl font-semibold text-primary/80 md:text-2xl">
