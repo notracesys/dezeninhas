@@ -122,7 +122,7 @@ export default function PricingPage() {
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 15 }, (_, i) => i + 6).map((num) => (
+                    {Array.from({ length: 10 }, (_, i) => i + 6).map((num) => (
                       <SelectItem key={num} value={String(num)}>
                         {num} dezenas
                       </SelectItem>

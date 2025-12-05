@@ -27,8 +27,8 @@ export async function generateNumbersAction(
   try {
     const { numbersPerCombination } = input;
 
-    if (numbersPerCombination < 6 || numbersPerCombination > 20) {
-       return { success: false, error: "A quantidade de dezenas deve ser entre 6 e 20." };
+    if (numbersPerCombination < 6 || numbersPerCombination > 15) {
+       return { success: false, error: "A quantidade de dezenas deve ser entre 6 e 15." };
     }
 
     const combination = generateUniqueRandomNumbers(numbersPerCombination, 1, 60);
