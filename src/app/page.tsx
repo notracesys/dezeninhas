@@ -23,7 +23,7 @@ export default function Home() {
           <Button
             asChild
             size="lg"
-            className="mt-8 transform rounded-lg bg-primary px-12 py-8 text-xl font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90"
+            className="mt-8 transform rounded-lg bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90"
           >
             <Link href="/pricing">QUERO GERAR MEUS NÚMEROS</Link>
           </Button>
@@ -32,7 +32,7 @@ export default function Home() {
       <footer className="w-full bg-white p-4 pb-8">
         <div className="mx-auto max-w-3xl text-center text-slate-500">
           <h3 className="font-bold text-xs mb-1">Aviso Importante</h3>
-          <p className="text-[11px]">
+          <p className="text-[10px]">
             Os números que você obterá em nosso sistema não são uma garantia de
             premiação. Eles são sugestões geradas com base em resoluções
             matemáticas, raciocínio lógico e um profundo estudo estatístico sobre
