@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import {
@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, LogOut } from 'lucide-react';
-import { useCollection, WithId } from '@/firebase/firestore/use-collection';
+import { useCollection } from '@/firebase/firestore/use-collection';
 import { CustomerRow, type CustomerDoc } from '@/components/customer-row';
 
 const AUTH_KEY = 'notracesys_auth_token';
@@ -59,7 +59,7 @@ export default function AdminPage() {
     return query(
       collection(firestore, 'customers'),
       orderBy('createdAt', 'desc'),
-      limit(50) // Limit to the most recent 50 customers for performance
+      limit(50)
     );
   }, [firestore, isAuthenticated]);
 
@@ -89,7 +89,11 @@ export default function AdminPage() {
       const batch = writeBatch(firestore);
       const newCode = generateAccessCode();
       
+      // Explicitly create document references with unique IDs first
       const accessCodeRef = doc(collection(firestore, 'access_codes'));
+      const customerRef = doc(collection(firestore, 'customers'));
+
+      // Set data for the access code document in the batch
       batch.set(accessCodeRef, {
         code: newCode,
         isUsed: false,
@@ -97,20 +101,21 @@ export default function AdminPage() {
         usedAt: null,
       });
 
-      const customerRef = doc(collection(firestore, 'customers'));
+      // Set data for the customer document, now with a valid accessCodeRef.id
       batch.set(customerRef, {
         email: email,
         accessCodeId: accessCodeRef.id,
         createdAt: serverTimestamp(),
       });
 
+      // Commit the batch
       await batch.commit();
       
       toast({
         title: 'Cliente e Código Criados!',
         description: `Código ${newCode} gerado para ${email}.`,
       });
-      setEmail('');
+      setEmail(''); // Clear the input on success
     } catch (error: any) {
       console.error("Error creating customer:", error);
       toast({
@@ -119,7 +124,7 @@ export default function AdminPage() {
         description: error.message || 'Ocorreu um problema.',
       });
     } finally {
-      setIsCreatingCustomer(false);
+      setIsCreatingCustomer(false); // Reset button state in both success and error cases
     }
   };
   
