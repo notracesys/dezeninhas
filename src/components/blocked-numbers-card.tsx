@@ -33,7 +33,7 @@ export function BlockedNumbersCard() {
       </div>
       <div className="mt-4 text-center">
         <h3 className="text-xl font-bold uppercase tracking-wider text-green-800">
-          Mega da Virada
+          Conteúdo Bloqueado
         </h3>
       </div>
     </div>
