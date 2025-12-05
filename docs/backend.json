@@ -6,11 +6,6 @@
       "type": "object",
       "description": "Represents a customer who has purchased access to the Mega Millions Maximizer number generation service.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the customer.",
-          "format": "uuid"
-        },
         "email": {
           "type": "string",
           "description": "The customer's email address.",
@@ -18,13 +13,18 @@
         },
         "accessCodeId": {
           "type": "string",
-          "description": "Reference to AccessCode. (Relationship: Customer 1:1 AccessCode)"
+          "description": "The ID of the access code assigned to this customer."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the customer was created."
         }
       },
       "required": [
-        "id",
         "email",
-        "accessCodeId"
+        "accessCodeId",
+        "createdAt"
       ]
     },
     "AccessCode": {
@@ -33,11 +33,6 @@
       "type": "object",
       "description": "Represents a unique access code granted to a customer after purchase, allowing them to generate number combinations.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the access code.",
-          "format": "uuid"
-        },
         "code": {
           "type": "string",
           "description": "The unique access code itself."
@@ -45,73 +40,54 @@
         "isUsed": {
           "type": "boolean",
           "description": "Indicates whether the access code has been used to generate numbers.",
-          "format": "boolean"
+          "default": false
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the code was created."
+        },
+        "usedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the code was used."
         }
       },
       "required": [
-        "id",
         "code",
-        "isUsed"
+        "isUsed",
+        "createdAt"
       ]
     }
   },
   "auth": {
     "providers": [
-      "password",
-      "anonymous"
+      "password"
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/customers/{customerId}",
-        "definition": {
-          "entityName": "Customer",
-          "schema": {
-            "$ref": "#/backend/entities/Customer"
-          },
-          "description": "Stores customer information. Includes a reference to the AccessCode and the isUsed status of the code (denormalized for authorization independence).",
-          "params": [
-            {
-              "name": "customerId",
-              "description": "The unique identifier for the customer."
-            }
-          ]
+    "/customers/{customerId}": {
+      "schema": {
+        "$ref": "#/entities/Customer"
+      },
+      "description": "Stores customer information, including their email and a reference to their access code."
+    },
+    "/access_codes/{accessCodeId}": {
+      "schema": {
+        "$ref": "#/entities/AccessCode"
+      },
+      "description": "Stores single-use access codes. The 'isUsed' field tracks redemption status."
+    },
+    "/roles_admin/{userId}": {
+      "schema": {
+        "type": "object",
+        "properties": {
+          "isAdmin": {
+            "type": "boolean"
+          }
         }
       },
-      {
-        "path": "/access_codes/{accessCodeId}",
-        "definition": {
-          "entityName": "AccessCode",
-          "schema": {
-            "$ref": "#/backend/entities/AccessCode"
-          },
-          "description": "Stores access codes.  Includes the 'code' and 'isUsed' status.",
-          "params": [
-            {
-              "name": "accessCodeId",
-              "description": "The unique identifier for the access code."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/roles_admin/{userId}",
-        "definition": {
-          "entityName": "roles_admin",
-          "schema": {
-            "$ref": "#/backend/entities/Customer"
-          },
-          "description": "Documents in this collection grant admin access. Existence of a document grants admin role.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the admin user."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "This Firestore data structure is designed to securely manage customer access codes for the Mega Millions Maximizer service. It uses structural segregation and denormalization to ensure authorization independence, enabling robust security rules without relying on hierarchical `get()` calls. The design separates admin roles from customer data, stores access codes in their own collection, and denormalizes the `isUsed` field from the `AccessCode` document into the `Customer` document to avoid needing `get()` calls to the `AccessCode` document on every number generation request.\n\nThe structure achieves Authorization Independence by avoiding hierarchical dependencies. Specifically, the customer document stores the access code ID and the isUsed status to avoid `get()` calls to access codes for basic customer operations. This supports atomic operations (transactions/batches) and enhances debuggability.\n\nTo support QAPs (Rules are not Filters), access codes are stored in their own collection. This means that list operations on customer data do not require filtering based on access code attributes. Admin users can be managed by creating documents in `/roles_admin/{uid}`."
+      "description": "Grants admin role to a user. The existence of a document with isAdmin:true grants privileges."
+    }
   }
 }

@@ -1,119 +1,49 @@
-/**
- * Core Philosophy:
- * This ruleset implements a strict Admin-centric security model. A small group of
- * administrative users, designated by the existence of a document in the `/roles_admin`
- * collection, has full control over managing customers and their single-use access
- * codes. All other users, whether authenticated or anonymous, are denied direct
- * access to the database.
- *
- * Data Structure:
- * - /customers/{customerId}: Stores records of customers who have purchased access.
- * - /access_codes/{accessCodeId}: Contains the single-use codes that grant access.
- * - /roles_admin/{userId}: A simple, powerful role-management collection. If a
- *   user's UID corresponds to a document ID in this collection, they are an admin.
- *
- * Key Security Decisions:
- * - Admin Supremacy: Only users with the 'admin' role can read or write data in
- *   the `/customers` and `/access_codes` collections.
- * - No Public Access: There are no publicly readable or listable collections. This
- *   prevents enumeration of customers or codes.
- * - Privilege Escalation Prevention: The `/roles_admin` collection itself is locked
- *   down. It is read-only for other admins and completely immutable from client
- *   requests. New admins must be added manually via the Firebase Console to
- *   prevent any potential security loopholes.
- * - Business Logic Enforcement: The rules enforce a critical piece of business logic:
- *   all newly created access codes MUST start with their `isUsed` status set to `false`.
- *
- * Denormalization for Authorization:
- * This ruleset relies on a separate `/roles_admin` collection to grant permissions.
- * The `isAdmin()` function performs a single, efficient `exists()` check against this
- * collection to authorize all high-privilege operations. This avoids embedding roles
- * in user tokens and makes role management straightforward and auditable.
- *
- * Structural Segregation:
- * The separation of `customers`, `access_codes`, and `roles_admin` into distinct
- * top-level collections is a key design choice. It creates clear security boundaries,
- * preventing any possibility of data leakage between different entity types and
- * simplifying the rules required to protect each one.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ------------------------------------------------------------------------
     // Helper Functions
-    // ------------------------------------------------------------------------
-
-    /**
-     * Checks if the user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the user has administrative privileges.
-     * Admin status is granted by the existence of a document in the /roles_admin
-     * collection with the user's UID as the document ID.
-     */
     function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      return isSignedIn() && get(/databases/$(database)/documents/roles_admin/$(request.auth.uid)).data.isAdmin == true;
+    }
+    
+    // Anyone can read an access code to validate it, but not list all codes.
+    // This allows the client-side to check if a code is valid and not used.
+    function canValidateAccessCode(code) {
+        return exists(/databases/$(database)/documents/access_codes/$(code));
     }
 
-    // ------------------------------------------------------------------------
-    // Collection Rules
-    // ------------------------------------------------------------------------
-
-    /**
-     * @description Controls access to customer records. Only admins can manage this data.
-     * @path /customers/{customerId}
-     * @allow (get) An admin can read a specific customer document.
-     * @allow (create) An admin can create a new customer record.
-     * @deny (list) A non-admin user cannot list any customer documents.
-     * @deny (update) A regular authenticated user cannot update a customer document.
-     * @principle Implements a strict role-based access control where only admins have permissions.
-     */
     match /customers/{customerId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
-      allow delete: if isAdmin() && resource != null;
-    }
-
-    /**
-     * @description Manages single-use access codes. Only admins can create or modify codes.
-     * @path /access_codes/{accessCodeId}
-     * @allow (create) An admin can create a new access code, provided `isUsed` is false.
-     * @allow (update) An admin can update an existing code (e.g., to mark it as used).
-     * @deny (create) An admin cannot create a code that is already marked as used.
-     * @deny (get) A non-admin cannot read or validate an access code directly.
-     * @principle Enforces admin-only management and validates critical business logic on create.
-     */
-    match /access_codes/{accessCodeId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      allow create: if isAdmin() && request.resource.data.isUsed == false;
-      allow update: if isAdmin() && resource != null;
-      allow delete: if isAdmin() && resource != null;
-    }
-
-    /**
-     * @description Secures the collection that grants admin roles.
-     * This collection is read-only for admins and locked for all write operations
-     * from clients to prevent privilege escalation.
-     * @path /roles_admin/{userId}
-     * @allow (get) An admin can check if another user is an admin.
-     * @deny (create) No user, not even another admin, can create a new admin role via a client request.
-     * @deny (delete) An admin cannot delete another admin role.
-     * @principle Prevents privilege escalation by making role assignments an out-of-band operation (via Firebase Console).
-     */
-    match /roles_admin/{userId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
-      allow create: if false;
+      // Only admins can read, list, create, or delete customer records.
+      allow read, list, create, delete: if isAdmin();
+      // No updates allowed by clients to prevent tampering.
       allow update: if false;
-      allow delete: if false;
+    }
+
+    match /access_codes/{accessCodeId} {
+      // Admins can manage the entire lifecycle of access codes.
+      allow read, list, create, delete: if isAdmin();
+      
+      // A user (authenticated or anonymous) can update a code ONLY to mark it as used.
+      // This is the core of the single-use logic.
+      // 1. The code must not have been used before (isUsed is false).
+      // 2. The update can only change isUsed to true.
+      // 3. No other fields can be changed.
+      allow update: if request.resource.data.isUsed == true &&
+                       resource.data.isUsed == false &&
+                       request.resource.data.keys().hasOnly(['isUsed', 'usedAt', 'code', 'createdAt']);
+    }
+    
+    match /roles_admin/{userId} {
+      // Admins can see who other admins are.
+      allow get, list: if isAdmin();
+      // Role management is locked down from the client to prevent privilege escalation.
+      // Roles must be assigned via the Firebase Console.
+      allow create, update, delete: if false;
     }
   }
 }

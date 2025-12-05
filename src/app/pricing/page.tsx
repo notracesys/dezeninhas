@@ -24,21 +24,20 @@ import {
 } from "@/components/ui/tooltip";
 import { BlockedNumbersCard } from "@/components/blocked-numbers-card";
 import { GeneratingLoader } from "@/components/generating-loader";
-
-
-// Este código de acesso é apenas para fins de demonstração.
-// Em um aplicativo real, a validação seria feita no backend após um pagamento bem-sucedido.
-const ACCESS_CODE = "MEGA2024";
+import { useFirestore } from "@/firebase";
+import { collection, query, where, getDocs, writeBatch } from "firebase/firestore";
 
 export default function PricingPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const firestore = useFirestore();
   const [numbersPerCombination, setNumbersPerCombination] = useState("6");
   const [accessCode, setAccessCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedNumbers, setGeneratedNumbers] = useState<GenerateNumbersOutput | null>(null);
-  
+  const [isCodeValid, setIsCodeValid] = useState(false);
+
   useEffect(() => {
     if (isGenerating && generatedNumbers) {
       const timer = setTimeout(() => {
@@ -48,25 +47,90 @@ export default function PricingPage() {
     }
   }, [isGenerating, generatedNumbers, router]);
 
+  const validateAccessCode = async (code: string) => {
+    if (!code) {
+      setIsCodeValid(false);
+      return;
+    }
+    const accessCodesRef = collection(firestore, "access_codes");
+    const q = query(accessCodesRef, where("code", "==", code.toUpperCase().trim()));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      setIsCodeValid(false);
+      return;
+    }
+
+    const accessCodeDoc = querySnapshot.docs[0];
+    if (accessCodeDoc.data().isUsed) {
+      setIsCodeValid(false);
+      toast({
+        variant: "destructive",
+        title: "Código Já Utilizado",
+        description: "Este código de acesso já foi utilizado para gerar dezenas.",
+      });
+    } else {
+      setIsCodeValid(true);
+    }
+  };
+
+  useEffect(() => {
+    const debounce = setTimeout(() => {
+      validateAccessCode(accessCode);
+    }, 500);
+    return () => clearTimeout(debounce);
+  }, [accessCode, firestore]);
+
   const startGenerationProcess = async () => {
-    if (accessCode.trim().toUpperCase() !== ACCESS_CODE) {
+    setIsLoading(true);
+
+    const accessCodesRef = collection(firestore, "access_codes");
+    const q = query(accessCodesRef, where("code", "==", accessCode.toUpperCase().trim()));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
       toast({
         variant: "destructive",
         title: "Código de Acesso Inválido",
         description: "Por favor, verifique seu código e tente novamente.",
       });
+      setIsLoading(false);
       return;
     }
-    
-    setIsLoading(true);
-    
+
+    const accessCodeDoc = querySnapshot.docs[0];
+    if (accessCodeDoc.data().isUsed) {
+      toast({
+        variant: "destructive",
+        title: "Código Já Utilizado",
+        description: "Este código não pode ser usado novamente.",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     const result = await generateNumbersAction({
       numbersPerCombination: parseInt(numbersPerCombination, 10),
     });
 
     if (result.success && result.data?.numberCombinations) {
-      setGeneratedNumbers(result.data);
-      setIsGenerating(true);
+      try {
+        const batch = writeBatch(firestore);
+        batch.update(accessCodeDoc.ref, { isUsed: true });
+        await batch.commit();
+        
+        setGeneratedNumbers(result.data);
+        setIsGenerating(true);
+
+      } catch (error) {
+         console.error("Error updating access code: ", error);
+         toast({
+            variant: "destructive",
+            title: "Erro ao validar código",
+            description: "Não foi possível marcar o código como utilizado. Tente novamente.",
+         });
+         setIsLoading(false);
+      }
     } else {
       toast({
         variant: "destructive",
@@ -77,7 +141,7 @@ export default function PricingPage() {
     }
   };
   
-  const isButtonDisabled = isLoading || accessCode.trim().toUpperCase() !== ACCESS_CODE.toUpperCase();
+  const isButtonDisabled = isLoading || !isCodeValid;
 
   return (
     <TooltipProvider>
@@ -142,7 +206,7 @@ export default function PricingPage() {
                     <Info size={16} className="text-gray-500 cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent className="max-w-xs bg-gray-800 text-white border-gray-700">
-                    <p>Você receberá seu código de acesso por e-mail após a confirmação do pagamento. Para fins de demonstração, use o código: <strong className="text-yellow-300">MEGA2024</strong></p>
+                    <p>Você receberá seu código de acesso por e-mail após a confirmação do pagamento.</p>
                   </TooltipContent>
                 </Tooltip>
               </div>
