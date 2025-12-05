@@ -29,6 +29,14 @@ export default function LoginPage() {
   const auth = useAuth();
   const { toast } = useToast();
 
+  // Effect to handle automatic redirect
+  useEffect(() => {
+    // If the initial auth check is done and a user exists, redirect them.
+    if (!isUserLoading && user) {
+      router.push('/admin');
+    }
+  }, [user, isUserLoading, router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -43,8 +51,7 @@ export default function LoginPage() {
     }
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // On successful login, explicitly navigate to the admin page.
-      router.push('/admin');
+      // On successful login, the useEffect above will handle the redirect.
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -55,32 +62,13 @@ export default function LoginPage() {
     }
   };
 
-  // Show a global loader only during the initial auth state check.
-  if (isUserLoading) {
+  // While checking auth state or if user exists (and is about to be redirected), show a loader.
+  if (isUserLoading || user) {
     return (
        <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="ml-4">Carregando...</p>
       </div>
-    );
-  }
-
-  // If the user is already logged in, show a message and a link instead of the form.
-  // This prevents the redirect loop.
-  if (user) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
-        <Card className="w-full max-w-sm text-center">
-            <CardHeader>
-                <CardTitle>Você já está logado</CardTitle>
-                <CardDescription>Clique no botão abaixo para acessar o painel.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Button asChild className="w-full">
-                    <Link href="/admin">Ir para o Painel de Admin</Link>
-                </Button>
-            </CardContent>
-        </Card>
-      </main>
     );
   }
 
