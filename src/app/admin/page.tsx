@@ -35,6 +35,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Copy, LogOut } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { useCollection } from '@/firebase/firestore/use-collection';
+import { useAdminStatus } from '@/hooks/useAdminStatus';
 
 interface Customer {
   id: string;
@@ -49,25 +50,29 @@ export default function AdminPage() {
   const auth = useAuth();
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
+  const { isAdmin, isAdminLoading } = useAdminStatus();
   const { toast } = useToast();
 
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
   const customersQuery = useMemoFirebase(() => {
-    // Only create the query if the user is authenticated and firestore is available
-    if (!firestore || !user) return null;
+    if (!firestore || !user || !isAdmin) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, user]);
+  }, [firestore, user, isAdmin]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
   useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
+    const isAuthCheckComplete = !isUserLoading && !isAdminLoading;
+  
+    if (isAuthCheckComplete) {
+      if (!user || !isAdmin) {
+        router.push('/login');
+      }
     }
-  }, [user, isUserLoading, router]);
+  }, [user, isUserLoading, isAdmin, isAdminLoading, router]);
 
   useEffect(() => {
     const fetchAccessCodes = async () => {
@@ -162,7 +167,7 @@ export default function AdminPage() {
     router.push('/login');
   };
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || isAdminLoading || !user || !isAdmin) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
