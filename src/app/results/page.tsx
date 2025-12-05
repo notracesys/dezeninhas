@@ -12,9 +12,6 @@ function LotteryCard({ combination, index }: { combination: number[], index: num
 
   return (
     <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden transform transition-transform hover:scale-105">
-      <div className="bg-primary text-primary-foreground p-3 flex justify-center items-center">
-        <span className="font-headline text-xl">Números da Virada</span>
-      </div>
       <div className="p-4 grid grid-cols-10 gap-1.5 md:gap-2">
         {allNumbers.map((number) => {
           const isSelected = combination.includes(number);
