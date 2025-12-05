@@ -36,7 +36,6 @@ export function GeneratingLoader({ onComplete }: GeneratingLoaderProps) {
         if (prev >= 100) {
           clearInterval(progressInterval);
           clearInterval(textInterval);
-          onComplete();
           return 100;
         }
         return prev + 4; // Aumenta 4% a cada 200ms para um total de 5s
@@ -47,7 +46,16 @@ export function GeneratingLoader({ onComplete }: GeneratingLoaderProps) {
       clearInterval(textInterval);
       clearInterval(progressInterval);
     };
-  }, [onComplete]);
+  }, []);
+
+  useEffect(() => {
+    if (progress >= 100) {
+      // Chame onComplete aqui para evitar o erro de renderização
+      const timer = setTimeout(() => onComplete(), 50); // Pequeno atraso para garantir que o estado seja atualizado
+      return () => clearTimeout(timer);
+    }
+  }, [progress, onComplete]);
+
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-sm">
