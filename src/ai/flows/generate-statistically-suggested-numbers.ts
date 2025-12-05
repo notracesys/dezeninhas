@@ -1,8 +1,8 @@
 'use server';
 /**
- * @fileOverview Generates statistically suggested number combinations for the Mega da Virada draw.
+ * @fileOverview Generates a statistically suggested number combination for the Mega da Virada draw.
  *
- * - generateStatisticallySuggestedNumbers - A function that generates statistically suggested number combinations.
+ * - generateStatisticallySuggestedNumbers - A function that generates a statistically suggested number combination.
  * - GenerateStatisticallySuggestedNumbersInput - The input type for the generateStatisticallySuggestedNumbers function.
  * - GenerateStatisticallySuggestedNumbersOutput - The return type for the generateStatisticallySuggestedNumbers function.
  */
@@ -11,11 +11,6 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateStatisticallySuggestedNumbersInputSchema = z.object({
-  numberOfCombinations: z
-    .number()
-    .min(1)
-    .max(10)
-    .describe('The number of number combinations to generate.'),
   numbersPerCombination: z
     .number()
     .min(6)
@@ -47,11 +42,10 @@ const generateNumbersPrompt = ai.definePrompt({
   output: {schema: GenerateStatisticallySuggestedNumbersOutputSchema},
   prompt: `You are an expert lottery number generator.
 
-  Based on statistical analysis of past Mega da Virada draws, generate {{{numberOfCombinations}}} unique combinations of {{{numbersPerCombination}}} numbers between 1 and 60. Return the combinations as a JSON array of arrays.
+  Based on statistical analysis of past Mega da Virada draws, generate 1 unique combination of {{{numbersPerCombination}}} numbers between 1 and 60. Return the combination as a JSON array of arrays.
 
-  The numbers in each combination should be sorted in ascending order.
-  The combinations must be distinct; do not return the same combination more than once.
-  Each combination must be an array of {{{numbersPerCombination}}} numbers. No duplicates allowed in a single combination.
+  The numbers in the combination should be sorted in ascending order.
+  The combination must be an array of {{{numbersPerCombination}}} numbers. No duplicates allowed in the combination.
   `,
 });
 
