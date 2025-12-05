@@ -3,12 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
   
-    // Allow any authenticated user to read (get, list) and write customers.
+    // Allow any authenticated user to read, list, and write customers.
     match /customers/{document=**} {
       allow read, write: if request.auth != null;
     }
     
-    // Allow any authenticated user to read (get, list) and write access codes.
+    // Allow any authenticated user to read, list, and write access codes.
     match /access_codes/{document=**} {
        allow read, write: if request.auth != null;
     }
