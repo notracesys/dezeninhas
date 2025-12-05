@@ -55,22 +55,23 @@ export default function AdminPage() {
 
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [pageState, setPageState] = useState<'loading' | 'redirecting' | 'loaded'>('loading');
   
   const customersQuery = useMemoFirebase(() => {
-    // This query will only run when firestore, user, and isAdmin are all truthy.
-    if (!firestore || !user || !isAdmin) return null;
+    if (pageState !== 'loaded' || !firestore || !isAdmin) return null;
     return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, user, isAdmin]);
+  }, [firestore, isAdmin, pageState]);
 
   const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
   useEffect(() => {
     const isAuthCheckComplete = !isUserLoading && !isAdminLoading;
-  
-    // Redirect logic: only runs when all loading is done.
     if (isAuthCheckComplete) {
-      if (!user || !isAdmin) {
+      if (user && isAdmin) {
+        setPageState('loaded');
+      } else {
+        setPageState('redirecting');
         router.push('/login');
       }
     }
@@ -78,15 +79,11 @@ export default function AdminPage() {
 
   useEffect(() => {
     const fetchAccessCodes = async () => {
-      // Data fetching logic: runs only when we have customers and isAdmin is confirmed.
-      if (customers && firestore && isAdmin) {
+      if (pageState === 'loaded' && customers && firestore) {
         const customersData = await Promise.all(
           customers.map(async (customer) => {
             if (!customer.accessCodeId) {
-                 return {
-                    ...customer,
-                    accessCode: 'N/A',
-                };
+                 return { ...customer, accessCode: 'N/A' };
             }
             try {
               const codeRef = doc(firestore, 'access_codes', customer.accessCodeId);
@@ -97,10 +94,7 @@ export default function AdminPage() {
               };
             } catch (error) {
                console.error(`Failed to fetch access code for customer ${customer.id}`, error);
-               return {
-                    ...customer,
-                    accessCode: 'Erro',
-               };
+               return { ...customer, accessCode: 'Erro' };
             }
           })
         );
@@ -108,7 +102,7 @@ export default function AdminPage() {
       }
     };
     fetchAccessCodes();
-  }, [customers, firestore, isAdmin]); // Depend on isAdmin to re-trigger if needed
+  }, [customers, firestore, pageState]);
 
   const generateAccessCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -128,8 +122,6 @@ export default function AdminPage() {
     try {
       const batch = writeBatch(firestore);
       const newCode = generateAccessCode();
-
-      // Create access code
       const accessCodeRef = doc(collection(firestore, 'access_codes'));
       batch.set(accessCodeRef, {
         code: newCode,
@@ -137,7 +129,6 @@ export default function AdminPage() {
         createdAt: serverTimestamp(),
       });
 
-      // Create customer
       const customerRef = doc(collection(firestore, 'customers'));
       batch.set(customerRef, {
         email: email,
@@ -146,7 +137,6 @@ export default function AdminPage() {
       });
 
       await batch.commit();
-
       toast({
         title: 'Cliente e Código Criados!',
         description: `Código ${newCode} gerado para ${email}.`,
@@ -178,19 +168,8 @@ export default function AdminPage() {
     router.push('/login');
   };
 
-  // Loading state covers user loading and admin status checking.
-  if (isUserLoading || isAdminLoading) {
+  if (pageState !== 'loaded') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-  
-  // This will only be rendered after loading is complete and we've confirmed the user is an admin.
-  // If not an admin, the useEffect above will have already triggered a redirect.
-  if (!user || !isAdmin) {
-      return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
