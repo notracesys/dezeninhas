@@ -82,9 +82,12 @@ function ResultsDisplay() {
              <LotteryCard key={index} combination={combo} index={index} />
           ))}
         </div>
-        <div className="text-center mt-12">
-          <Button asChild size="lg">
+        <div className="text-center mt-12 flex justify-center gap-4">
+          <Button asChild size="lg" variant="outline">
             <Link href="/">Voltar para o Início</Link>
+          </Button>
+          <Button asChild size="lg">
+            <Link href="/pricing">Gerar Novo Jogo</Link>
           </Button>
         </div>
       </CardContent>
