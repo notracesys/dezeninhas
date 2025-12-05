@@ -281,7 +281,7 @@ export default function AdminPage() {
                           )}
                         </TableCell>
                         <TableCell>
-                          {customer.createdAt?.toDate ? customer.createdAt?.toDate().toLocaleDateString('pt-BR') : 'Carregando...'}
+                          {customer.createdAt?.toDate ? customer.createdAt.toDate().toLocaleDateString('pt-BR') : 'Processando...'}
                         </TableCell>
                       </TableRow>
                     ))
