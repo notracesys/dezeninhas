@@ -73,9 +73,6 @@ function ResultsDisplay() {
   return (
     <Card className="w-full max-w-5xl shadow-2xl bg-slate-50/80 backdrop-blur-sm">
       <CardHeader className="text-center">
-        <div className="mx-auto bg-primary text-primary-foreground rounded-full p-3 w-fit mb-4 shadow-lg">
-            <Ticket size={40} />
-        </div>
         <CardTitle className="text-3xl font-bold text-primary">Suas Dezenas da Sorte!</CardTitle>
       </CardHeader>
       <CardContent>
