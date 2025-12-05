@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth, useFirestore, useMemoFirebase } from '@/firebase';
+import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase/provider';
+import { useAdminStatus } from '@/hooks/useAdminStatus';
 import {
   collection,
   serverTimestamp,
@@ -29,7 +32,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Copy } from 'lucide-react';
+import { Loader2, Copy, LogOut } from 'lucide-react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { signOut } from 'firebase/auth';
 
@@ -41,39 +44,39 @@ interface Customer {
   accessCode?: string;
 }
 
-export default function AdminSecretPage() {
+export default function AdminPage() {
   const firestore = useFirestore();
   const auth = useAuth();
+  const router = useRouter();
   const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
+  const { isAdmin, isAdminLoading } = useAdminStatus(user);
 
   const [email, setEmail] = useState('');
   const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
-  const [isReady, setIsReady] = useState(false);
-
-  useEffect(() => {
-    // Forçar o logout de qualquer usuário que possa estar em cache
-    if (auth && auth.currentUser) {
-      signOut(auth).then(() => {
-        setIsReady(true);
-      }).catch(() => {
-        setIsReady(true); // Mesmo que o logout falhe, tente continuar
-      });
-    } else {
-      setIsReady(true);
-    }
-  }, [auth]);
-
-  const customersQuery = useMemoFirebase(() => {
-    if (!firestore || !isReady) return null;
-    return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
-  }, [firestore, isReady]);
-
-  const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
   const [customersWithCodes, setCustomersWithCodes] = useState<Customer[]>([]);
 
+  // Redireciona se não for admin após o carregamento
+  useEffect(() => {
+    if (!isUserLoading && !isAdminLoading) {
+      if (!user || !isAdmin) {
+        router.replace('/login');
+      }
+    }
+  }, [user, isUserLoading, isAdmin, isAdminLoading, router]);
+
+  const customersQuery = useMemoFirebase(() => {
+    // Só cria a query se for admin
+    if (!firestore || !isAdmin) return null;
+    return query(collection(firestore, 'customers'), orderBy('createdAt', 'desc'));
+  }, [firestore, isAdmin]);
+
+  const { data: customers, isLoading: isLoadingCustomers } = useCollection<Omit<Customer, 'id'>>(customersQuery);
+
+  // Busca os códigos de acesso apenas se for admin e houver clientes
   useEffect(() => {
     const fetchAccessCodes = async () => {
-      if (customers && firestore) {
+      if (isAdmin && customers && firestore) {
         const customersData = await Promise.all(
           customers.map(async (customer) => {
             if (!customer.accessCodeId) {
@@ -95,11 +98,10 @@ export default function AdminSecretPage() {
         setCustomersWithCodes(customersData);
       }
     };
+    
+    fetchAccessCodes();
 
-    if(isReady){
-      fetchAccessCodes();
-    }
-  }, [customers, firestore, isReady]);
+  }, [customers, firestore, isAdmin]);
 
   const generateAccessCode = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -159,13 +161,26 @@ export default function AdminSecretPage() {
       description: 'Código de acesso copiado para a área de transferência.',
     });
   };
-  
-  if (!isReady) {
+
+  const handleLogout = async () => {
+    if(auth) {
+      await signOut(auth);
+      router.push('/login');
+    }
+  }
+
+  // Tela de carregamento enquanto verifica o usuário e o status de admin
+  if (isUserLoading || isAdminLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <Loader2 className="h-12 w-12 animate-spin" />
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
+  }
+  
+  // Se não for admin, não renderiza nada (o useEffect cuidará do redirecionamento)
+  if (!isAdmin) {
+     return null;
   }
 
   return (
@@ -173,7 +188,10 @@ export default function AdminSecretPage() {
       <div className="mx-auto max-w-4xl">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Painel de Administração</h1>
-          <p className="text-sm text-muted-foreground">URL Secreta</p>
+          <Button variant="ghost" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Sair
+          </Button>
         </div>
 
         <Card className="mb-8">
