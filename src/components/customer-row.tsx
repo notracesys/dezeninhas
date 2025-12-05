@@ -37,7 +37,6 @@ export function CustomerRow({ customer }: CustomerRowProps) {
 
   useEffect(() => {
     const fetchAccessCode = async () => {
-      setIsLoadingCode(true);
       if (!firestore || !customer.accessCodeId) {
         setIsLoadingCode(false);
         return;
@@ -51,20 +50,17 @@ export function CustomerRow({ customer }: CustomerRowProps) {
           setIsUsed(codeData.isUsed);
         } else {
           setAccessCode('Não encontrado');
-          setIsUsed(null);
-          console.error(`Access code not found for ID: ${customer.accessCodeId}`);
         }
       } catch (error) {
         console.error("Error fetching access code:", error);
         setAccessCode('Erro');
-        setIsUsed(null);
       } finally {
         setIsLoadingCode(false);
       }
     };
 
     fetchAccessCode();
-  }, [firestore, customer.id, customer.accessCodeId]);
+  }, [firestore, customer.accessCodeId]);
 
   const copyToClipboard = (text: string) => {
     if (navigator.clipboard) {
@@ -74,6 +70,21 @@ export function CustomerRow({ customer }: CustomerRowProps) {
         description: 'Código de acesso copiado para a área de transferência.',
       });
     }
+  };
+
+  const getCreationDate = () => {
+    // The `createdAt` field from `customer` might be a Firestore Timestamp object
+    // or a plain object during the brief moment of local creation before server sync.
+    // This safely handles both cases.
+    if (!customer.createdAt) {
+      return 'Processando...';
+    }
+    // Firestore Timestamps have a `toDate` method.
+    if (typeof customer.createdAt.toDate === 'function') {
+      return customer.createdAt.toDate().toLocaleDateString('pt-BR');
+    }
+    // If it's not a Timestamp object yet, it's still syncing.
+    return 'Processando...';
   };
 
   return (
@@ -113,6 +124,7 @@ export function CustomerRow({ customer }: CustomerRowProps) {
            <Badge variant="secondary">Erro</Badge>
         )}
       </TableCell>
+      <TableCell>{getCreationDate()}</TableCell>
     </TableRow>
   );
 }

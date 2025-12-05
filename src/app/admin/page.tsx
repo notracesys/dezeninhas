@@ -89,11 +89,9 @@ export default function AdminPage() {
       const batch = writeBatch(firestore);
       const newCode = generateAccessCode();
       
-      // Explicitly create document references with unique IDs first
       const accessCodeRef = doc(collection(firestore, 'access_codes'));
       const customerRef = doc(collection(firestore, 'customers'));
 
-      // Set data for the access code document in the batch
       batch.set(accessCodeRef, {
         code: newCode,
         isUsed: false,
@@ -101,30 +99,28 @@ export default function AdminPage() {
         usedAt: null,
       });
 
-      // Set data for the customer document, now with a valid accessCodeRef.id
       batch.set(customerRef, {
         email: email,
         accessCodeId: accessCodeRef.id,
         createdAt: serverTimestamp(),
       });
 
-      // Commit the batch
       await batch.commit();
       
       toast({
         title: 'Cliente e Código Criados!',
         description: `Código ${newCode} gerado para ${email}.`,
       });
-      setEmail(''); // Clear the input on success
+      setEmail('');
     } catch (error: any) {
       console.error("Error creating customer:", error);
       toast({
         variant: 'destructive',
         title: 'Erro ao criar cliente',
-        description: error.message || 'Ocorreu um problema.',
+        description: error.message || 'Ocorreu um problema ao salvar no banco de dados.',
       });
     } finally {
-      setIsCreatingCustomer(false); // Reset button state in both success and error cases
+      setIsCreatingCustomer(false);
     }
   };
   
@@ -189,12 +185,13 @@ export default function AdminPage() {
                     <TableHead>Email</TableHead>
                     <TableHead>Código de Acesso</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Data de Criação</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoadingCustomers ? (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">
+                      <TableCell colSpan={4} className="text-center">
                         <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                       </TableCell>
                     </TableRow>
@@ -204,7 +201,7 @@ export default function AdminPage() {
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={3} className="text-center">
+                      <TableCell colSpan={4} className="text-center">
                         Nenhum cliente encontrado.
                       </TableCell>
                     </TableRow>
