@@ -1,24 +1,13 @@
 "use server";
 
+import { generateStatisticallySuggestedNumbers } from "@/ai/flows/generate-statistically-suggested-numbers";
+
 export interface GenerateNumbersInput {
   numbersPerCombination: number;
 }
 
 export interface GenerateNumbersOutput {
   numberCombinations: number[][];
-}
-
-function generateUniqueRandomNumbers(count: number, min: number, max: number): number[] {
-  if (count > max - min + 1) {
-    throw new Error("Não é possível gerar mais números únicos do que o intervalo disponível.");
-  }
-  
-  const numbers = new Set<number>();
-  while (numbers.size < count) {
-    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-    numbers.add(randomNumber);
-  }
-  return Array.from(numbers).sort((a, b) => a - b);
 }
 
 export async function generateNumbersAction(
@@ -30,16 +19,16 @@ export async function generateNumbersAction(
     if (numbersPerCombination < 6 || numbersPerCombination > 15) {
        return { success: false, error: "A quantidade de dezenas deve ser entre 6 e 15." };
     }
-
-    const combination = generateUniqueRandomNumbers(numbersPerCombination, 1, 60);
     
-    const result: GenerateNumbersOutput = {
-      numberCombinations: [combination],
-    };
-
+    // CHAMADA CORRETA PARA A IA
+    const result = await generateStatisticallySuggestedNumbers({
+      numbersPerCombination,
+    });
+    
     return { success: true, data: result };
+
   } catch (error: any) {
-    console.error(error);
-    return { success: false, error: error.message || "Falha ao gerar dezenas." };
+    console.error("AI Generation Error:", error);
+    return { success: false, error: error.message || "Falha ao gerar dezenas com a IA." };
   }
 }
