@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Loader2, Info, Ticket, Check } from "lucide-react";
+import { ArrowLeft, CheckCircle, Loader2, Info, Ticket, Check, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,7 +169,7 @@ export default function PricingPage() {
           <p className="text-5xl sm:text-7xl font-bold text-yellow-400 my-4">
             R$ 14,90
           </p>
-          <p className="text-lg text-slate-200">Apenas uma única liberação por jogo.</p>
+          <p className="text-lg text-slate-200">Cada código é válido para gerar <b>um único jogo</b>.</p>
           
           <div className="relative my-8 w-full max-w-sm -rotate-3">
              <BlockedNumbersCard />
@@ -240,6 +240,10 @@ export default function PricingPage() {
                   {isVerifyingCode ? <Loader2 className="animate-spin" /> : <Check />}
                 </Button>
               </div>
+               <div className="mt-3 flex items-center gap-2 text-xs text-yellow-700 bg-yellow-100 p-2 rounded-md">
+                  <AlertTriangle size={28} />
+                  <span>O código só pode ser usado <b>uma vez</b>. Para gerar um novo jogo, você precisará de um novo código.</span>
+                </div>
             </div>
 
             <Button
