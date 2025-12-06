@@ -77,7 +77,6 @@ export default function GenerationAreaPage() {
   // States for the "hacker" switches (for visual purposes only)
   const [sequenceInjection, setSequenceInjection] = useState(true);
   const [randomBypass, setRandomBypass] = useState(true);
-  const [entropyScan, setEntropyScan] = useState(false);
 
   useEffect(() => {
     if (isGenerating && generatedNumbers) {
@@ -152,12 +151,6 @@ export default function GenerationAreaPage() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="random-bypass" className="text-sm text-slate-600">Bypass de Aleatoriedade Padrão</Label>
                 <Switch id="random-bypass" checked={randomBypass} onCheckedChange={setRandomBypass} />
-              </div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="entropy-scan" className="flex items-center gap-2 text-sm text-slate-600">
-                  Varredura de Entropia de Sorteio
-                </Label>
-                <Switch id="entropy-scan" checked={entropyScan} onCheckedChange={setEntropyScan} />
               </div>
             </div>
 
