@@ -75,9 +75,9 @@ export default function GenerationAreaPage() {
   const [generatedNumbers, setGeneratedNumbers] = useState<GenerateNumbersOutput | null>(null);
   
   // States for the "hacker" switches (for visual purposes only)
-  const [freqAnalysis, setFreqAnalysis] = useState(true);
-  const [patternSearch, setPatternSearch] = useState(true);
-  const [quadrantOptimization, setQuadrantOptimization] = useState(false);
+  const [sequenceInjection, setSequenceInjection] = useState(true);
+  const [randomBypass, setRandomBypass] = useState(true);
+  const [entropyScan, setEntropyScan] = useState(false);
 
   useEffect(() => {
     if (isGenerating && generatedNumbers) {
@@ -144,20 +144,20 @@ export default function GenerationAreaPage() {
             </div>
 
             <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50 p-4">
-              <h3 className="text-md font-semibold text-slate-800 text-center">Configurações Avançadas</h3>
+              <h3 className="text-md font-semibold text-slate-800 text-center">Protocolos Avançados</h3>
               <div className="flex items-center justify-between">
-                <Label htmlFor="freq-analysis" className="text-sm text-slate-600">Análise de Frequência</Label>
-                <Switch id="freq-analysis" checked={freqAnalysis} onCheckedChange={setFreqAnalysis} />
+                <Label htmlFor="sequence-injection" className="text-sm text-slate-600">Injeção de Sequência Otimizada (ISO)</Label>
+                <Switch id="sequence-injection" checked={sequenceInjection} onCheckedChange={setSequenceInjection} />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="pattern-search" className="text-sm text-slate-600">Busca por Padrões Anteriores</Label>
-                <Switch id="pattern-search" checked={patternSearch} onCheckedChange={setPatternSearch} />
+                <Label htmlFor="random-bypass" className="text-sm text-slate-600">Bypass de Aleatoriedade Padrão</Label>
+                <Switch id="random-bypass" checked={randomBypass} onCheckedChange={setRandomBypass} />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="quadrant-optimization" className="flex items-center gap-2 text-sm text-slate-600">
-                  Otimização de Quadrantes do Volante
+                <Label htmlFor="entropy-scan" className="flex items-center gap-2 text-sm text-slate-600">
+                  Varredura de Entropia de Sorteio
                 </Label>
-                <Switch id="quadrant-optimization" checked={quadrantOptimization} onCheckedChange={setQuadrantOptimization} />
+                <Switch id="entropy-scan" checked={entropyScan} onCheckedChange={setEntropyScan} />
               </div>
             </div>
 
