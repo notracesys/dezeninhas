@@ -78,7 +78,7 @@ function ResultsDisplay() {
           </AlertDescription>
         </Alert>
 
-        <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+        <div className="grid w-full justify-items-center gap-8">
           {combinations.map((combo, index) => (
              <LotteryCard key={index} combination={combo} index={index} />
           ))}
