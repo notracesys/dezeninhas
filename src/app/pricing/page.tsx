@@ -181,6 +181,7 @@ export default function PricingPage() {
           </div>
 
           <div className="w-full space-y-6 bg-white/90 p-6 rounded-lg shadow-xl">
+            <p className="text-slate-700 font-semibold">Para comprar seu código, clique no botão abaixo 👇</p>
             <Button
               size="lg"
               className="animate-sheen w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-xl py-7 rounded-lg shadow-lg"
