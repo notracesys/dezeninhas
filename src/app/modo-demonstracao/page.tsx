@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { BlockedNumbersCard } from "@/components/blocked-numbers-card";
 import { GeneratingLoader } from "@/components/generating-loader";
+import { Switch } from "@/components/ui/switch";
 
 interface GenerateNumbersInput {
   numbersPerCombination: number;
@@ -73,6 +74,11 @@ export default function DemonstrationPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedNumbers, setGeneratedNumbers] = useState<GenerateNumbersOutput | null>(null);
   
+  // States for the "hacker" switches (for visual purposes only)
+  const [freqAnalysis, setFreqAnalysis] = useState(true);
+  const [patternSearch, setPatternSearch] = useState(true);
+  const [quantumAlgo, setQuantumAlgo] = useState(false);
+
   useEffect(() => {
     if (isGenerating && generatedNumbers) {
       const timer = setTimeout(() => {
@@ -134,6 +140,24 @@ export default function DemonstrationPage() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            <div className="space-y-4 rounded-md border border-slate-200 bg-slate-50 p-4">
+              <h3 className="text-md font-semibold text-slate-800 text-center">Configurações Avançadas</h3>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="freq-analysis" className="text-sm text-slate-600">Análise de Frequência</Label>
+                <Switch id="freq-analysis" checked={freqAnalysis} onCheckedChange={setFreqAnalysis} />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="pattern-search" className="text-sm text-slate-600">Busca por Padrões Anteriores</Label>
+                <Switch id="pattern-search" checked={patternSearch} onCheckedChange={setPatternSearch} />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="quantum-algo" className="flex items-center gap-2 text-sm text-slate-600">
+                  Algoritmo Quântico <span className="text-xs font-bold text-primary">(BETA)</span>
+                </Label>
+                <Switch id="quantum-algo" checked={quantumAlgo} onCheckedChange={setQuantumAlgo} />
               </div>
             </div>
 
