@@ -17,8 +17,16 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
 
-// The secret code for admin access is now loaded from an environment variable for security.
-const SECRET_CODE = process.env.NEXT_PUBLIC_ADMIN_SECRET_CODE || 'notracesys123';
+// =================================================================================
+// IMPORTANTE: PARA ALTERAR A SENHA DO PAINEL DE ADMINISTRAÇÃO
+// 
+// Altere o valor da constante 'SECRET_CODE' abaixo para a sua nova senha.
+// Após alterar, você PRECISA fazer o deploy do site novamente para que a 
+// nova senha entre em vigor.
+//
+// Exemplo: const SECRET_CODE = 'minhanovasenha123';
+// =================================================================================
+const SECRET_CODE = 'notracesys123';
 const AUTH_KEY = 'notracesys_auth_token';
 
 export default function SecretCodeLoginPage() {
