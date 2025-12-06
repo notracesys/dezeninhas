@@ -77,7 +77,7 @@ export default function GenerationAreaPage() {
   // States for the "hacker" switches (for visual purposes only)
   const [freqAnalysis, setFreqAnalysis] = useState(true);
   const [patternSearch, setPatternSearch] = useState(true);
-  const [quantumAlgo, setQuantumAlgo] = useState(false);
+  const [quadrantOptimization, setQuadrantOptimization] = useState(false);
 
   useEffect(() => {
     if (isGenerating && generatedNumbers) {
@@ -154,10 +154,10 @@ export default function GenerationAreaPage() {
                 <Switch id="pattern-search" checked={patternSearch} onCheckedChange={setPatternSearch} />
               </div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="quantum-algo" className="flex items-center gap-2 text-sm text-slate-600">
-                  Algoritmo Quântico <span className="text-xs font-bold text-primary">(BETA)</span>
+                <Label htmlFor="quadrant-optimization" className="flex items-center gap-2 text-sm text-slate-600">
+                  Otimização de Quadrantes do Volante
                 </Label>
-                <Switch id="quantum-algo" checked={quantumAlgo} onCheckedChange={setQuantumAlgo} />
+                <Switch id="quadrant-optimization" checked={quadrantOptimization} onCheckedChange={setQuadrantOptimization} />
               </div>
             </div>
 
