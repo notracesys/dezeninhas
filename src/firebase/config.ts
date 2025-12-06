@@ -7,10 +7,10 @@ import { FirebaseOptions } from 'firebase/app';
 // For production deployments, especially on platforms like Netlify or Vercel,
 // you should set these as environment variables.
 export const firebaseConfig: FirebaseOptions = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  projectId: "studio-9688338833-1fbbb",
+  appId: "1:846396000808:web:f117278aa5356bea3a831d",
+  apiKey: "AIzaSyDjmgOcAebnKxg7dPlyVuSYWkcaVJnM_as",
+  authDomain: "studio-9688338833-1fbbb.firebaseapp.com",
+  measurementId: "",
+  messagingSenderId: "846396000808",
 };
