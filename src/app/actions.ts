@@ -20,15 +20,20 @@ export async function generateNumbersAction(
        return { success: false, error: "A quantidade de dezenas deve ser entre 6 e 15." };
     }
     
-    // CHAMADA CORRETA PARA A IA
+    // Call the actual AI flow
     const result = await generateStatisticallySuggestedNumbers({
       numbersPerCombination,
     });
     
+    // Ensure the result has the expected structure
+    if (!result || !result.numberCombinations || !Array.isArray(result.numberCombinations)) {
+        throw new Error("A IA retornou uma resposta em formato inválido.");
+    }
+    
     return { success: true, data: result };
 
   } catch (error: any) {
-    console.error("AI Generation Error:", error);
+    console.error("AI Generation Error in action:", error);
     return { success: false, error: error.message || "Falha ao gerar dezenas com a IA." };
   }
 }

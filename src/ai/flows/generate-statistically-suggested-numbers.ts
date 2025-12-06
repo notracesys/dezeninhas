@@ -40,7 +40,6 @@ const generateNumbersPrompt = ai.definePrompt({
   name: 'generateNumbersPrompt',
   input: {schema: GenerateStatisticallySuggestedNumbersInputSchema},
   output: {schema: GenerateStatisticallySuggestedNumbersOutputSchema},
-  model: 'googleai/gemini-1.5-flash',
   prompt: `You are an expert lottery number generator.
 
   Based on statistical analysis of past Números da Virada draws, generate 1 unique combination of {{{numbersPerCombination}}} numbers between 1 and 60. Return the combination as a JSON array of arrays.
