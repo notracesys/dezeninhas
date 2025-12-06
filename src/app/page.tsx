@@ -23,7 +23,7 @@ export default function Home() {
           <h2 className="mt-2 text-xl font-semibold text-primary/80 md:text-2xl">
             Aumente Suas Chances
           </h2>
-          <p className="mt-6 max-w-lg text-lg text-slate-600">
+          <p className="mx-auto mt-6 max-w-lg text-lg text-slate-600">
             Este site consiste em dezenas que foram estudadas e geradas por
             especialistas.
           </p>
