@@ -57,7 +57,7 @@ const generateStatisticallySuggestedNumbersFlow = ai.defineFlow(
     outputSchema: GenerateStatisticallySuggestedNumbersOutputSchema,
   },
   async input => {
-    const {output} = await generateNumbersPrompt(input);
+    const {output} = await generateNumbersPrompt(input, { model: 'googleai/gemini-1.5-flash' });
     return output!;
   }
 );
