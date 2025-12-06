@@ -8,7 +8,7 @@ export default function Home() {
     <div className="relative min-h-screen w-full overflow-hidden bg-white">
       <div className="absolute inset-0 z-0 h-full w-full"></div>
       <BackgroundDecorations />
-      <div className="relative z-10 flex min-h-[90vh] flex-col items-center justify-center p-4 text-center">
+      <div className="relative z-10 flex min-h-[80vh] flex-col items-center justify-center p-4 text-center">
         <main>
           <Image
             src="/logo.png"
