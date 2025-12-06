@@ -30,6 +30,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  env: {
+    ADMIN_SECRET_CODE: process.env.ADMIN_SECRET_CODE,
+  }
 };
 
 export default nextConfig;
