@@ -16,17 +16,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import { verifySecretCode } from './actions';
 
-// =================================================================================
-// IMPORTANTE: PARA ALTERAR A SENHA DO PAINEL DE ADMINISTRAÇÃO
-// 
-// Altere o valor da constante 'SECRET_CODE' abaixo para a sua nova senha.
-// Após alterar, você PRECISA fazer o deploy do site novamente para que a 
-// nova senha entre em vigor.
-//
-// Exemplo: const SECRET_CODE = 'minhanovasenha123';
-// =================================================================================
-const SECRET_CODE = 'notracesys123';
 const AUTH_KEY = 'notracesys_auth_token';
 
 export default function SecretCodeLoginPage() {
@@ -45,11 +36,13 @@ export default function SecretCodeLoginPage() {
     }
   }, [router]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (code === SECRET_CODE) {
+    const isCorrect = await verifySecretCode(code);
+
+    if (isCorrect) {
       // On successful validation, set a session token and redirect.
       sessionStorage.setItem(AUTH_KEY, 'true');
       toast({
@@ -100,7 +93,7 @@ export default function SecretCodeLoginPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-full" disabled={isSubmitting || !code}>
               {isSubmitting ? <Loader2 className="animate-spin" /> : 'Entrar'}
             </Button>
           </CardFooter>
