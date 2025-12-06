@@ -76,7 +76,7 @@ export default function AdminPage() {
     for (let i = 0; i < 8; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
-    return code;
+    return code.toUpperCase();
   };
 
   const handleCreateCustomer = async (e: React.FormEvent) => {
