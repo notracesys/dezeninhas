@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function LotteryCard({ combination, index }: { combination: number[], index: number }) {
@@ -66,7 +68,16 @@ function ResultsDisplay() {
         <CardTitle className="text-3xl font-bold text-primary">Suas Dezenas da Sorte!</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-center text-muted-foreground mb-8">Aqui estão suas combinações geradas por especialistas. Boa sorte!</p>
+        <p className="text-center text-muted-foreground mb-6">Aqui estão suas combinações geradas por especialistas. Boa sorte!</p>
+        
+        <Alert variant="destructive" className="mb-8 max-w-2xl mx-auto bg-yellow-50 border-yellow-300 text-yellow-900 [&>svg]:text-yellow-900">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle className="font-bold text-lg">Aviso Importante!</AlertTitle>
+          <AlertDescription className="text-base">
+            Anote ou tire um print (foto da tela) das suas dezenas. Caso você saia ou feche esta página, será necessário pagar novamente para gerar um novo jogo.
+          </AlertDescription>
+        </Alert>
+
         <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
           {combinations.map((combo, index) => (
              <LotteryCard key={index} combination={combo} index={index} />
