@@ -216,7 +216,7 @@ export default function PricingPage() {
         <div className="max-w-md mx-auto flex flex-col items-center text-center">
           <h1 className="text-3xl sm:text-5xl font-bold mt-12 text-white">Acesso às Dezenas da Virada</h1>
           <p className="text-5xl sm:text-7xl font-bold text-yellow-400 my-4">
-            R$ 14,90
+            R$ 9,99
           </p>
           <p className="text-lg text-slate-200">Cada código é válido para gerar <b>um único jogo</b>.</p>
           
